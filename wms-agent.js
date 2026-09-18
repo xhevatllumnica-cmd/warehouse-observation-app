@@ -148,6 +148,19 @@ http.createServer(async (req,resp)=>{
   const q=url.parse(req.url,true);
   const json=(code,obj)=>{ resp.writeHead(code,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Cache-Control':'no-store'}); resp.end(JSON.stringify(obj)); };
   try{
+    // CORS preflight (for the browser extension pushing cookies)
+    if(req.method==='OPTIONS'){ resp.writeHead(204,{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type','Access-Control-Max-Age':'86400'}); return resp.end(); }
+    // Receive a fresh cookie from the local browser extension (auto-renewal — no manual paste ever)
+    if(q.pathname==='/wms/cookie' && req.method==='POST'){
+      let body=''; req.on('data',c=>{ body+=c; if(body.length>2e6) req.destroy(); });
+      req.on('end',()=>{ try{ const j=JSON.parse(body||'{}'); const ck=((j&&j.cookie)||'').trim();
+        if(ck && ck.length>40){ cookieJar={}; parseIntoJar(ck); persistCookie(true);
+          console.log('[wms-agent] '+new Date().toLocaleTimeString()+' cookie auto-updated from extension ('+cookieHeader().length+' chars)');
+          return json(200,{ok:true,len:cookieHeader().length}); }
+        return json(400,{error:'empty cookie'});
+      }catch(e){ return json(400,{error:'bad json'}); } });
+      return;
+    }
     if(q.pathname==='/wms/health') return json(200,{ok:true, wms:WMS});
     if(q.pathname==='/wms/stats'){ const r=await getStats(); return json(r.error?502:200, r.error?{error:r.error}:r.data); }
     if(q.pathname==='/wms/prepared'){ const r=await getPrepared(q.query.start||today(), q.query.end||q.query.start||today()); return json(r.error?502:200, r.error?{error:r.error}:{kind:'preparedOrders',rows:r.data}); }

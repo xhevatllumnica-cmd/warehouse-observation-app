@@ -2645,7 +2645,7 @@ function renderWMS(v){
     connBadge=`<span class="badge b-ok">🟢 Agjenti i lidhur</span>`
       + `<span class="badge ${cfg.autoSync?'b-ok':'b-muted'}">Auto-sync ${cfg.autoSync?('ON · çdo '+(cfg.interval||30)+' min'):'OFF'}</span>`;
     connHint=cfg.lastError
-      ? `<div class="hint" style="margin-top:6px;color:#f2a">⚠ ${h(cfg.lastError)==='auth_expired'?'Cookie-ja e WMS ka skaduar — përditësoje te <b>wms-agent.config.json</b> dhe ristarto agjentin.':h(cfg.lastError)}</div>`
+      ? `<div class="hint" style="margin-top:6px;color:#f2a">⚠ ${h(cfg.lastError)==='auth_expired'?'Cookie-ja e WMS skadoi. Nëse ke instaluar shtojcën <b>WMS Cookie Sync</b> dhe je i loguar në WMS në Chrome, rifreskohet vetvetiu brenda pak çastesh — mjafton të hapësh wms.gjirafamall.com. (Përndryshe, përditësoje manualisht te <b>wms-agent.config.json</b>.)':h(cfg.lastError)}</div>`
       : `<div class="hint" style="margin-top:6px">Të dhënat merren <b>automatikisht</b> nga agjenti lokal (localhost) me sesionin tënd të autorizuar të WMS-it. S'ka hapa manualë.</div>`;
   } else {
     connBadge=`<span class="badge b-muted">Agjenti jo aktiv</span>`;

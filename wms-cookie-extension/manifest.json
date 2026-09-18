@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "WMS Cookie Sync (local)",
+  "version": "1.0",
+  "description": "Sends your wms.gjirafamall.com session cookie to the local Warehouse agent (localhost:8790) so sync stays authorized automatically. Local-only; nothing leaves your machine.",
+  "permissions": ["cookies", "alarms"],
+  "host_permissions": [
+    "https://wms.gjirafamall.com/*",
+    "http://localhost:8790/*"
+  ],
+  "background": { "service_worker": "background.js" }
+}
