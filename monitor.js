@@ -12,7 +12,8 @@ const MON_MODULES=[
   {id:'checkout',title:'Check-out',     render:()=>renderCheckout($('#monStage')),  reset:()=>{ coDate=null; }, body:'#coBody'},
   {id:'mapp',    title:'Mapp',          render:()=>renderMapp($('#monStage')),      reset:()=>{ mpDate=null; }, body:'#mpBody'},
   {id:'podscan', title:'POD (skanime)', render:()=>renderPodScan($('#monStage')),   reset:()=>{ pdDate=null; }, body:'#pdBody'}];
-let monToken=0, monPaused=false, monSkip=false;
+const MON_DAYS=['E diel','E hënë','E martë','E mërkurë','E enjte','E premte','E shtunë'];
+let monToken=0, monPaused=false, monSkip=false, monRedo=false;
 const monGet=()=>{ try{ return JSON.parse(localStorage.getItem('monitorSettings')||'null'); }catch(e){ return null; } };
 const monSet=s=>{ try{ localStorage.setItem('monitorSettings', JSON.stringify(s)); }catch(e){} };
 function monSettings(){ const s=monGet()||{}; return {sec: Math.max(5, +s.sec||20), on: Array.isArray(s.on)? s.on : MON_MODULES.map(m=>m.id)}; }
@@ -23,8 +24,11 @@ function renderMonitor(v){
         <div class="card mon-tools" style="margin-bottom:12px"><div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
           ${MON_MODULES.map(m=>`<label class="small" style="display:flex;gap:5px;align-items:center"><input type="checkbox" data-mon="${m.id}" ${S.on.includes(m.id)?'checked':''}> ${h(m.title)}</label>`).join('')}
           <label class="small" style="display:flex;gap:5px;align-items:center">Sekonda <input type="number" id="monSec" min="5" max="600" value="${S.sec}" style="width:70px;min-height:34px"></label>
-          <button class="btn sm" id="monPause">⏸ Pauzë</button><button class="btn sm" id="monNext">Tjetri ▸</button><button class="btn sm primary" id="monFull">⛶ Ekran i plotë</button></div></div>
-        <div class="mon-head"><b id="monTitle">…</b><span class="small faint" id="monPos"></span><span class="small faint" id="monClock" style="margin-left:auto"></span></div>
+          <button class="btn sm" id="monPause">⏸ Pauzë</button><button class="btn sm" id="monNext">Tjetri ▸</button></div></div>
+        <div class="mon-top"><div class="mon-stripe"></div>
+          <div><div class="mon-title"><span id="monTitle">…</span> <span class="small faint" id="monPos" style="font-weight:400"></span></div><div class="mon-sub" id="monSub">—</div></div>
+          <div class="mon-clock" id="monClock">--:--</div>
+          <div class="mon-act"><input type="date" id="monDate" class="btn" disabled title="Data e sotme" style="padding:5px 8px"><button class="btn" id="monRefresh" title="Rifresko modulin tani">⟳</button><button class="btn" id="monFull">⛶ Ekran i plotë</button></div></div>
         <div class="mon-bar"><div id="monFill"></div></div>
         <div class="mon-area" id="monArea"><div class="mon-stage" id="monStage"></div></div></div>`;
   const save=()=>{ monSet({sec:Math.max(5,+$('#monSec').value||20), on:[...document.querySelectorAll('[data-mon]')].filter(c=>c.checked).map(c=>c.dataset.mon)}); };
@@ -32,8 +36,11 @@ function renderMonitor(v){
   $('#monPause').onclick=()=>{ monPaused=!monPaused; $('#monPause').textContent= monPaused? '▶ Vazhdo' : '⏸ Pauzë'; };
   $('#monNext').onclick=()=>{ monSkip=true; };
   $('#monFull').onclick=()=>{ const w=$('#monWrap'); if(document.fullscreenElement) document.exitFullscreen(); else if(w.requestFullscreen) w.requestFullscreen(); };
-  const clock=()=>{ const c=$('#monClock'); if(c) c.textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }; clock();
-  const ck=setInterval(()=>{ if(my!==monToken||!$('#monClock')) return clearInterval(ck); clock(); }, 15000);
+  $('#monRefresh').onclick=()=>{ monRedo=true; };
+  const clock=()=>{ const c=$('#monClock'); if(!c) return; const n=new Date(), iso=fmtLocalDate(n);
+    c.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+    $('#monSub').textContent=MON_DAYS[n.getDay()]+', '+fmtDateAl(iso); $('#monDate').value=iso; }; clock();
+  const ck=setInterval(()=>{ if(my!==monToken||!$('#monClock')) return clearInterval(ck); clock(); }, 1000);
   monLoop(my);
 }
 const monAlive=my=> my===monToken && !!document.getElementById('monStage');
@@ -48,6 +55,7 @@ async function monLoop(my){
     try{ await monShow(m, my); }catch(e){ if(monAlive(my)) $('#monStage').innerHTML='<div class="empty">'+h(m.title)+': '+h(String(e&&e.message||e))+'</div>'; }
     if(!monAlive(my)) return;
     await monWait(S.sec, my);
+    if(monRedo){ monRedo=false; i--; }
   }
 }
 /* draw the module for today and wait until its body is no longer the "reading…" placeholder (a slow read: 30 s at most) */
@@ -85,7 +93,7 @@ async function monWait(sec, my){
     const now=Date.now(); if(monPaused) paused+=now-last; last=now;
     const el=(now-t0-paused)/1000; $('#monFill').style.width=Math.min(100,el/sec*100)+'%';
     const ar=$('#monArea'); if(ar){ const mx=ar.scrollHeight-ar.clientHeight; if(mx>4) ar.scrollTop=mx*Math.min(1, el/(sec*0.85)); }
-    if(monSkip){ monSkip=false; return; }
+    if(monSkip || monRedo){ monSkip=false; return; }
     if(el>=sec) return; await monSleep(250);
   }
 }

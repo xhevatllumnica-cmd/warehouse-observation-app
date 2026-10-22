@@ -72,9 +72,9 @@ async function mpDraw(){
         <td data-sort="${p.perHour||0}"><b>${mpR(p.perHour)}</b></td><td class="small">${h(p.f||'')}${p.l&&p.l!==p.f? '–'+h(p.l) : ''}</td></tr>`).join('')}</tbody></table></div>
       <div class="hint">Mapp = njësi të vendosura në një rresht rafti (çdo rresht i log-ut një njësi). Rreshti / seksioni i një njësie = rreshti i fundit i saj te ProductCheckIns; numërohen për çdo operator veç e veç. Njësi / orë = mapp ÷ orët me të paktën një skanim. ${D.excluded? D.excluded+' njësi nga llogari jashtë orarit nuk numërohen.' : ''}</div></div>
     <div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Mapp për orë <span class="sub">ekipi dhe secili operator</span></h3>
-      <div style="display:flex;align-items:flex-end;gap:4px;height:120px;margin:8px 0 4px">${hrs.map(x=>`<div title="${String(x).padStart(2,'0')}:00 · ${byH[x]} mapp" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">
+      <div class="mon-hide" style="display:flex;align-items:flex-end;gap:4px;height:120px;margin:8px 0 4px">${hrs.map(x=>`<div title="${String(x).padStart(2,'0')}:00 · ${byH[x]} mapp" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">
         <span class="small">${byH[x]}</span><div style="width:100%;background:var(--accent);border-radius:3px 3px 0 0;height:${Math.round(byH[x]/maxH*90)}%"></div></div>`).join('')}</div>
-      <div style="display:flex;gap:4px">${hrs.map(x=>`<div class="small faint" style="flex:1;text-align:center">${String(x).padStart(2,'0')}</div>`).join('')}</div>
+      <div class="mon-hide" style="display:flex;gap:4px">${hrs.map(x=>`<div class="small faint" style="flex:1;text-align:center">${String(x).padStart(2,'0')}</div>`).join('')}</div>
       <div class="tablewrap" style="margin-top:10px"><table class="heat"><thead><tr><th>Operatori</th>${hrs.map(x=>`<th>${String(x).padStart(2,'0')}</th>`).join('')}<th>Gjithsej</th></tr></thead><tbody>
       ${ppl.map(p=>`<tr><th style="text-align:left">${h(p.name)}</th>${hrs.map(x=>{ const n=p.hours[x]||0; return `<td style="background:rgba(17,91,146,${(n/maxH*0.85).toFixed(2)});color:${n/maxH>0.55?'#fff':'var(--text)'}">${n||''}</td>`; }).join('')}<td><b>${p.units}</b></td></tr>`).join('')}</tbody></table></div></div>
     ${mpSections(secDay)}
