@@ -462,6 +462,7 @@ const ROUTES = [
   {id:'kerko', title:'Kërko produkt', ic:'🔎', render:renderProductSearch},
   {id:'picking', title:'Picking', ic:'🧺', render:renderPicking},
   {id:'checkin', title:'Check-in', ic:'📥', render:renderCheckin},
+  {id:'checkout', title:'Check-out', ic:'📤', render:renderCheckout},
   {id:'orders', title:'Order Flow', ic:'➜', render:renderOrders},
   {id:'inbound', title:'Product / Inbound Flow', ic:'⇩', render:renderInbound},
   {id:'pod', title:'POD — Proof of Delivery', ic:'🚚', render:renderPod},

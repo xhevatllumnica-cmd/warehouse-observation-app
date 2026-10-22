@@ -304,7 +304,28 @@ SELECT /*pulse:E*/
         JOIN (SELECT UserId FROM Users WHERE UserWarehouseId=1 AND UserId>0 GROUP BY UserId) us ON us.UserId=pl.UpdateBy
         OUTER APPLY (SELECT TOP 1 c0.SupplyUniqueId, c0.ProductCode FROM ProductCheckIns c0 WHERE c0.ProductItemUniqueIdentifier=pl.ProductItemUniqueIdentifierId ORDER BY c0.Id DESC) c
         WHERE pl.LogTypeId=2 AND pl.InsertDateTime>=DATEADD(day,-14,CAST(GETDATE() AS date))) x
-  GROUP BY d, sid FOR JSON PATH) ciSu
+  GROUP BY d, sid FOR JSON PATH) ciSu,
+ -- Check-out (app tab "Check-out", the lead 22.10.2026, same layout as Picking / Check-in), warehouse-01 accounts, the last 36 days.
+ -- A check-out = one ProductLogs LogTypeId 4 / 18 row (a unit scanned out for an order, local time).
+ -- coH: units checked out per local day × hour × account.
+ (SELECT CONVERT(varchar(10),pl.InsertDateTime,23) d, DATEPART(hour,pl.InsertDateTime) h, pl.UpdateBy u, MIN(LTRIM(RTRIM(ISNULL(us.FirstName,'')+' '+ISNULL(us.LastName,'')))) fn, COUNT(*) n
+  FROM ProductLogs pl WITH (NOLOCK)
+  JOIN (SELECT UserId, MIN(FirstName) FirstName, MIN(LastName) LastName FROM Users WHERE UserWarehouseId=1 AND UserId>0 GROUP BY UserId) us ON us.UserId=pl.UpdateBy
+  WHERE pl.LogTypeId IN (4,18) AND pl.OrderId>0 AND pl.InsertDateTime>=DATEADD(day,-36,CAST(GETDATE() AS date))
+  GROUP BY CONVERT(varchar(10),pl.InsertDateTime,23), DATEPART(hour,pl.InsertDateTime), pl.UpdateBy FOR JSON PATH) coH,
+ -- coS: per local day × account: units (n), distinct orders (o), orders of Gjirafa50 (g, PlatformId 2), first / last time.
+ (SELECT CONVERT(varchar(10),pl.InsertDateTime,23) d, pl.UpdateBy u, MIN(LTRIM(RTRIM(ISNULL(us.FirstName,'')+' '+ISNULL(us.LastName,'')))) fn, COUNT(*) n,
+    COUNT(DISTINCT CONCAT(pl.OrderId,'-',pl.PlatformId)) o, COUNT(DISTINCT CASE WHEN pl.PlatformId=2 THEN pl.OrderId END) g,
+    MIN(CONVERT(varchar(5),pl.InsertDateTime,108)) f, MAX(CONVERT(varchar(5),pl.InsertDateTime,108)) l
+  FROM ProductLogs pl WITH (NOLOCK)
+  JOIN (SELECT UserId, MIN(FirstName) FirstName, MIN(LastName) LastName FROM Users WHERE UserWarehouseId=1 AND UserId>0 GROUP BY UserId) us ON us.UserId=pl.UpdateBy
+  WHERE pl.LogTypeId IN (4,18) AND pl.OrderId>0 AND pl.InsertDateTime>=DATEADD(day,-36,CAST(GETDATE() AS date))
+  GROUP BY CONVERT(varchar(10),pl.InsertDateTime,23), pl.UpdateBy FOR JSON PATH) coS,
+ -- coP: per local day × platform (1 Mall, 2 Gjirafa50): units and distinct orders checked out, orders of warehouse 01 (all accounts).
+ (SELECT CONVERT(varchar(10),pl.InsertDateTime,23) d, pl.PlatformId p, COUNT(*) n, COUNT(DISTINCT pl.OrderId) o
+  FROM ProductLogs pl WITH (NOLOCK) JOIN Orders o ON o.OrderId=pl.OrderId AND o.PlatformId=pl.PlatformId AND o.WarehouseId=1
+  WHERE pl.LogTypeId IN (4,18) AND pl.OrderId>0 AND pl.InsertDateTime>=DATEADD(day,-36,CAST(GETDATE() AS date))
+  GROUP BY CONVERT(varchar(10),pl.InsertDateTime,23), pl.PlatformId FOR JSON PATH) coP
 
 -- @F inbound batches (Product / Inbound Flow): every supply of warehouse 01 from yesterday and today, plus older ones
 --    (≤14 days) that still have units waiting to be mapped. Stages: arrival = invoice registered (or the truck's actual
