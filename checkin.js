@@ -11,7 +11,7 @@ let ckDate=null, ckData=null, ckBulk=[], ckSched={};
 async function renderCheckin(v){
   if(!ckDate) ckDate=todayStr();
   v.innerHTML=pagehead('Check-in','Pranimi i njësive në WMS: <b>sipas ditës, ndërrimit dhe operatorit</b>, check-in për orë, furnizime dhe produkte. Burimi: WMS (log-u i check-in), rifreskohet çdo orë 07–22. Vetëm stafi në Orarin e punës.','')
-    + `<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    + `<div class="card mod-ctl" style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <label class="small" style="display:flex;gap:6px;align-items:center">Data <input type="date" id="ckDate" value="${h(ckDate)}" max="${h(todayStr())}" style="width:auto;min-height:34px"></label>
         <button class="btn sm" id="ckToday">Sot</button><button class="btn sm" id="ckYday">Dje</button>
         <span class="small faint" id="ckAt" style="margin-left:auto"></span></div></div>
@@ -69,9 +69,6 @@ async function ckDraw(){
       ${kpiCard(T.s.toLocaleString(), 'Furnizime (supply) të prekura', ppl.length+' operatorë')}
       ${kpiCard(T.k.toLocaleString(), 'Produkte (kode) të ndryshme', 'shuma për operator')}
       ${kpiCard(ckPct(T.o,T.units), 'Njësi me porosi', T.o.toLocaleString()+' njësi të lidhura me një porosi'+(T.bulk? ' · '+T.bulk+' check-in masiv (pa log)' : ''))}</div>
-    <div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas ndërrimit</h3><div class="tablewrap"><table><thead><tr><th>Ndërrimi</th><th>Operatorë</th><th>Furnizime</th><th>Check-in</th><th>Me porosi</th><th>Orë aktive</th><th>Njësi / orë</th></tr></thead><tbody>
-      ${shifts.map(x=>`<tr><td><b>${x.s}</b></td><td>${x.n}</td><td>${x.ss}</td><td>${x.units}</td><td>${x.o} <span class="faint">(${ckPct(x.o,x.units)})</span></td><td>${x.h}</td><td><b>${x.h? ckR(x.units/x.h) : '—'}</b></td></tr>`).join('')}</tbody></table></div>
-      <div class="hint">Ndërrimi i personit nga Orari i punës (fillim para 12:00 → N1, ndryshe N2; e shtunë/e diel → Weekend); pa orar → sipas check-in-it të parë.</div></div>
     <div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas operatorit <span class="sub">${h(fmtDateAl(ckDate))}</span></h3><div class="tablewrap"><table><thead><tr><th>Operatori</th><th>Ndërrimi</th><th>Furnizime</th><th>Produkte</th><th>Check-in</th><th>Me porosi</th><th>Orë aktive</th><th>Njësi / orë</th><th>Koha</th></tr></thead><tbody>
       ${ppl.map(p=>`<tr><td><b>${h(p.name)}</b></td><td>${p.shift}</td><td>${p.s}</td><td>${p.k}</td><td>${p.units}${p.bulk? ' <span class="faint small">(+'+p.bulk+' masiv)</span>' : ''}</td>
         <td data-sort="${p.units? p.o/p.units : 0}">${p.o} <span class="faint">(${ckPct(p.o,p.units)})</span></td><td>${p.activeH}</td><td data-sort="${p.perHour||0}"><b>${ckR(p.perHour)}</b></td>
@@ -84,7 +81,10 @@ async function ckDraw(){
       <div class="tablewrap" style="margin-top:10px"><table class="heat"><thead><tr><th>Operatori</th>${hrs.map(x=>`<th>${String(x).padStart(2,'0')}</th>`).join('')}<th>Gjithsej</th></tr></thead><tbody>
       ${ppl.map(p=>`<tr><th style="text-align:left">${h(p.name)}</th>${hrs.map(x=>{ const n=p.hours[x]||0; return `<td style="background:rgba(17,91,146,${(n/maxH*0.85).toFixed(2)});color:${n/maxH>0.55?'#fff':'var(--text)'}">${n||''}</td>`; }).join('')}<td><b>${p.units}</b></td></tr>`).join('')}</tbody></table></div></div>
     ${ckSupplies()}
-    ${ckTrend(sched)}`;
+    ${ckTrend(sched)}
+    <div class="card sh-card" style="margin:12px 0 0"><h3 style="margin-top:0">Sipas ndërrimit</h3><div class="tablewrap"><table><thead><tr><th>Ndërrimi</th><th>Operatorë</th><th>Furnizime</th><th>Check-in</th><th>Me porosi</th><th>Orë aktive</th><th>Njësi / orë</th></tr></thead><tbody>
+      ${shifts.map(x=>`<tr><td><b>${x.s}</b></td><td>${x.n}</td><td>${x.ss}</td><td>${x.units}</td><td>${x.o} <span class="faint">(${ckPct(x.o,x.units)})</span></td><td>${x.h}</td><td><b>${x.h? ckR(x.units/x.h) : '—'}</b></td></tr>`).join('')}</tbody></table></div>
+      <div class="hint">Ndërrimi i personit nga Orari i punës (fillim para 12:00 → N1, ndryshe N2; e shtunë/e diel → Weekend); pa orar → sipas check-in-it të parë.</div></div>`;
 }
 function ckSupplies(){
   const rows=(ckData.supplies||[]).filter(r=>r.d===ckDate).sort((a,b)=>b.n-a.n); if(!rows.length) return '';

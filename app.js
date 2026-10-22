@@ -465,6 +465,7 @@ const ROUTES = [
   {id:'checkout', title:'Check-out', ic:'📤', render:renderCheckout},
   {id:'mapp', title:'Mapp', ic:'🗄️', render:renderMapp},
   {id:'podscan', title:'POD (skanime)', ic:'🧾', render:renderPodScan},
+  {id:'monitor', title:'Monitor', ic:'🖥️', render:renderMonitor},
   {id:'orders', title:'Order Flow', ic:'➜', render:renderOrders},
   {id:'inbound', title:'Product / Inbound Flow', ic:'⇩', render:renderInbound},
   {id:'pod', title:'POD — Proof of Delivery', ic:'🚚', render:renderPod},

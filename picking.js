@@ -12,7 +12,7 @@ let pkDate=null, pkData=null, pkSched={};
 async function renderPicking(v){
   if(!pkDate) pkDate=todayStr();
   v.innerHTML=pagehead('Picking','Mbledhja e porosive me sesione picking në WMS: <b>sipas ditës, ndërrimit dhe operatorit</b>, picks për orë dhe njësi të skanuara / të kërkuara. Burimi: WMS (tabelat e picking-ut), rifreskohet çdo orë 07–22. Vetëm stafi në Orarin e punës.','')
-    + `<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    + `<div class="card mod-ctl" style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <label class="small" style="display:flex;gap:6px;align-items:center">Data <input type="date" id="pkDate" value="${h(pkDate)}" max="${h(todayStr())}" style="width:auto;min-height:34px"></label>
         <button class="btn sm" id="pkToday">Sot</button><button class="btn sm" id="pkYday">Dje</button>
         <span class="small faint" id="pkAt" style="margin-left:auto"></span></div></div>
@@ -68,9 +68,6 @@ async function pkDraw(){
       ${kpiCard(T.o.toLocaleString(), 'Porosi në sesione', T.s+' sesione · '+ppl.length+' pickers')}
       ${kpiCard(pkPct(T.sc,T.rq), 'Skanuar / kërkuar', T.sc.toLocaleString()+' / '+T.rq.toLocaleString()+' njësi')}
       ${kpiCard(T.s2+' / '+T.s, 'Sesione me status 2', (T.s3? 'status 3: '+T.s3+' · ' : '')+(T.s1? 'status 1 (hapur): '+T.s1+' · ' : '')+(T.s2? 'mesatarisht '+pkR(T.sec2/T.s2/60)+' min' : ''))}</div>
-    <div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas ndërrimit</h3><div class="tablewrap"><table><thead><tr><th>Ndërrimi</th><th>Pickers</th><th>Sesione</th><th>Porosi</th><th>Picks</th><th>Skanuar / kërkuar</th><th>Orë aktive</th><th>Picks / orë</th></tr></thead><tbody>
-      ${shifts.map(x=>`<tr><td><b>${x.s}</b></td><td>${x.n}</td><td>${x.ss}</td><td>${x.o}</td><td>${x.picks}</td><td>${x.sc} / ${x.rq} <span class="faint">(${pkPct(x.sc,x.rq)})</span></td><td>${x.h}</td><td><b>${x.h? pkR(x.picks/x.h) : '—'}</b></td></tr>`).join('')}</tbody></table></div>
-      <div class="hint">Ndërrimi i personit nga Orari i punës (fillim para 12:00 → N1, ndryshe N2; e shtunë/e diel → Weekend); pa orar → sipas pick-ut të parë.</div></div>
     <div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas operatorit <span class="sub">${h(fmtDateAl(pkDate))}</span></h3><div class="tablewrap"><table><thead><tr><th>Operatori</th><th>Ndërrimi</th><th>Sesione (st. 2 / 3)</th><th>Porosi</th><th>Picks</th><th>Skanuar / kërkuar</th><th>Orë aktive</th><th>Picks / orë</th><th>Sesioni mes.</th><th>Sesionet</th></tr></thead><tbody>
       ${ppl.map(p=>`<tr><td><b>${h(p.name)}</b></td><td>${p.shift}</td><td data-sort="${p.s}">${p.s} <span class="faint small">(${p.s2} / ${p.s3})</span></td><td>${p.o}</td><td>${p.picks}</td>
         <td data-sort="${p.rq? p.sc/p.rq : 0}">${p.sc} / ${p.rq} <span class="faint">(${pkPct(p.sc,p.rq)})</span></td><td>${p.activeH}</td><td data-sort="${p.perHour||0}"><b>${pkR(p.perHour)}</b></td>
@@ -83,7 +80,10 @@ async function pkDraw(){
       <div class="tablewrap" style="margin-top:10px"><table class="heat"><thead><tr><th>Operatori</th>${hrs.map(x=>`<th>${String(x).padStart(2,'0')}</th>`).join('')}<th>Gjithsej</th></tr></thead><tbody>
       ${ppl.map(p=>`<tr><th style="text-align:left">${h(p.name)}</th>${hrs.map(x=>{ const n=p.hours[x]||0; return `<td style="background:rgba(17,91,146,${(n/maxH*0.85).toFixed(2)});color:${n/maxH>0.55?'#fff':'var(--text)'}">${n||''}</td>`; }).join('')}<td><b>${p.picks}</b></td></tr>`).join('')}</tbody></table></div></div>
     ${pkStations()}
-    ${pkTrend(sched)}`;
+    ${pkTrend(sched)}
+    <div class="card sh-card" style="margin:12px 0 0"><h3 style="margin-top:0">Sipas ndërrimit</h3><div class="tablewrap"><table><thead><tr><th>Ndërrimi</th><th>Pickers</th><th>Sesione</th><th>Porosi</th><th>Picks</th><th>Skanuar / kërkuar</th><th>Orë aktive</th><th>Picks / orë</th></tr></thead><tbody>
+      ${shifts.map(x=>`<tr><td><b>${x.s}</b></td><td>${x.n}</td><td>${x.ss}</td><td>${x.o}</td><td>${x.picks}</td><td>${x.sc} / ${x.rq} <span class="faint">(${pkPct(x.sc,x.rq)})</span></td><td>${x.h}</td><td><b>${x.h? pkR(x.picks/x.h) : '—'}</b></td></tr>`).join('')}</tbody></table></div>
+      <div class="hint">Ndërrimi i personit nga Orari i punës (fillim para 12:00 → N1, ndryshe N2; e shtunë/e diel → Weekend); pa orar → sipas pick-ut të parë.</div></div>`;
 }
 function pkStations(){
   const rows=(pkData.stations||[]).filter(r=>r.d===pkDate).sort((a,b)=>b.sc-a.sc); if(!rows.length) return '';

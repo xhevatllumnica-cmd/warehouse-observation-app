@@ -11,7 +11,7 @@ let coDate=null, coData=null, coSched={};
 async function renderCheckout(v){
   if(!coDate) coDate=todayStr();
   v.innerHTML=pagehead('Check-out','Dërgimi i porosive nga magazina në WMS: <b>sipas ditës, ndërrimit dhe operatorit</b>, njësi dhe porosi të dërguara, check-out për orë dhe sipas platformës. Burimi: WMS (log-u i check-out), rifreskohet çdo orë 07–22. Vetëm stafi në Orarin e punës.','')
-    + `<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    + `<div class="card mod-ctl" style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <label class="small" style="display:flex;gap:6px;align-items:center">Data <input type="date" id="coDate" value="${h(coDate)}" max="${h(todayStr())}" style="width:auto;min-height:34px"></label>
         <button class="btn sm" id="coToday">Sot</button><button class="btn sm" id="coYday">Dje</button>
         <span class="small faint" id="coAt" style="margin-left:auto"></span></div></div>
@@ -66,9 +66,6 @@ async function coDraw(){
       ${kpiCard(T.o.toLocaleString(), 'Porosi të kontrolluara', ppl.length+' operatorë · '+(T.o? coR(T.units/T.o)+' njësi për porosi' : ''))}
       ${kpiCard(coPct(T.g,T.o), 'Porosi Gjirafa50', T.g.toLocaleString()+' nga '+T.o.toLocaleString()+' (Mall: '+(T.o-T.g).toLocaleString()+')')}
       ${kpiCard(T.h? coR(T.o/T.h) : '—', 'Porosi / orë për person', T.h+' orë aktive gjithsej')}</div>
-    <div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas ndërrimit</h3><div class="tablewrap"><table><thead><tr><th>Ndërrimi</th><th>Operatorë</th><th>Porosi</th><th>Check-out</th><th>Orë aktive</th><th>Njësi / orë</th><th>Porosi / orë</th></tr></thead><tbody>
-      ${shifts.map(x=>`<tr><td><b>${x.s}</b></td><td>${x.n}</td><td>${x.o}</td><td>${x.units}</td><td>${x.h}</td><td><b>${x.h? coR(x.units/x.h) : '—'}</b></td><td>${x.h? coR(x.o/x.h) : '—'}</td></tr>`).join('')}</tbody></table></div>
-      <div class="hint">Ndërrimi i personit nga Orari i punës (fillim para 12:00 → N1, ndryshe N2; e shtunë/e diel → Weekend); pa orar → sipas check-out-it të parë.</div></div>
     <div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas operatorit <span class="sub">${h(fmtDateAl(coDate))}</span></h3><div class="tablewrap"><table><thead><tr><th>Operatori</th><th>Ndërrimi</th><th>Porosi</th><th>Check-out</th><th>Gjirafa50</th><th>Orë aktive</th><th>Njësi / orë</th><th>Porosi / orë</th><th>Koha</th></tr></thead><tbody>
       ${ppl.map(p=>`<tr><td><b>${h(p.name)}</b></td><td>${p.shift}</td><td>${p.o}</td><td>${p.units}</td><td data-sort="${p.o? p.g/p.o : 0}">${p.g} <span class="faint">(${coPct(p.g,p.o)})</span></td><td>${p.activeH}</td>
         <td data-sort="${p.perHour||0}"><b>${coR(p.perHour)}</b></td><td data-sort="${p.ordPerHour||0}">${coR(p.ordPerHour)}</td><td class="small">${h(p.f||'')}${p.l&&p.l!==p.f? '–'+h(p.l) : ''}</td></tr>`).join('')}</tbody></table></div>
@@ -80,7 +77,10 @@ async function coDraw(){
       <div class="tablewrap" style="margin-top:10px"><table class="heat"><thead><tr><th>Operatori</th>${hrs.map(x=>`<th>${String(x).padStart(2,'0')}</th>`).join('')}<th>Gjithsej</th></tr></thead><tbody>
       ${ppl.map(p=>`<tr><th style="text-align:left">${h(p.name)}</th>${hrs.map(x=>{ const n=p.hours[x]||0; return `<td style="background:rgba(17,91,146,${(n/maxH*0.85).toFixed(2)});color:${n/maxH>0.55?'#fff':'var(--text)'}">${n||''}</td>`; }).join('')}<td><b>${p.units}</b></td></tr>`).join('')}</tbody></table></div></div>
     ${coPlatforms()}
-    ${coTrend(sched)}`;
+    ${coTrend(sched)}
+    <div class="card sh-card" style="margin:12px 0 0"><h3 style="margin-top:0">Sipas ndërrimit</h3><div class="tablewrap"><table><thead><tr><th>Ndërrimi</th><th>Operatorë</th><th>Porosi</th><th>Check-out</th><th>Orë aktive</th><th>Njësi / orë</th><th>Porosi / orë</th></tr></thead><tbody>
+      ${shifts.map(x=>`<tr><td><b>${x.s}</b></td><td>${x.n}</td><td>${x.o}</td><td>${x.units}</td><td>${x.h}</td><td><b>${x.h? coR(x.units/x.h) : '—'}</b></td><td>${x.h? coR(x.o/x.h) : '—'}</td></tr>`).join('')}</tbody></table></div>
+      <div class="hint">Ndërrimi i personit nga Orari i punës (fillim para 12:00 → N1, ndryshe N2; e shtunë/e diel → Weekend); pa orar → sipas check-out-it të parë.</div></div>`;
 }
 function coPlatforms(){
   const rows=(coData.platforms||[]).filter(r=>r.d===coDate).sort((a,b)=>a.p-b.p); if(!rows.length) return '';

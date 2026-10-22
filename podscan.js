@@ -12,7 +12,7 @@ let pdDate=null, pdData=null, pdSched={}, pdSeq=0;
 async function renderPodScan(v){
   if(!pdDate) pdDate=todayStr();
   v.innerHTML=pagehead('POD (skanime)','Porositë e skanuara për korrierët në Delivery Platform: <b>sipas ditës, ndërrimit dhe operatorit</b>, skanime për orë dhe sipas postës së korrierit. Burimi: Delivery Platform (vetëm emri i skanuesit, ora dhe numrat). Vetëm stafi në Orarin e punës.','')
-    + `<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    + `<div class="card mod-ctl" style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <label class="small" style="display:flex;gap:6px;align-items:center">Data <input type="date" id="pdDate" value="${h(pdDate)}" max="${h(todayStr())}" style="width:auto;min-height:34px"></label>
         <button class="btn sm" id="pdToday">Sot</button><button class="btn sm" id="pdYday">Dje</button>
         <span class="small faint" id="pdAt" style="margin-left:auto"></span></div></div>
@@ -74,9 +74,6 @@ async function pdDraw(){
       ${kpiCard(ppl.length.toLocaleString(), 'Operatorë (llogari) me skanime', T.h+' orë aktive gjithsej')}
       ${kpiCard(pdPct(T.n,all), 'Nga stafi në orar', T.n.toLocaleString()+' nga '+all.toLocaleString()+' skanime gjithsej')}
       ${kpiCard(hrs.length? String(hrs[0]).padStart(2,'0')+':00–'+String(hrs[hrs.length-1]).padStart(2,'0')+':59' : '—', 'Ora e skanimeve', 'nga ora e parë te e fundit me skanim')}</div>
-    <div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas ndërrimit</h3><div class="tablewrap"><table><thead><tr><th>Ndërrimi</th><th>Operatorë</th><th>Skanime</th><th>Orë aktive</th><th>Skanime / orë</th></tr></thead><tbody>
-      ${shifts.map(x=>`<tr><td><b>${x.s}</b></td><td>${x.n}</td><td>${x.scans}</td><td>${x.h}</td><td><b>${x.h? pdR(x.scans/x.h) : '—'}</b></td></tr>`).join('')}</tbody></table></div>
-      <div class="hint">Ndërrimi i personit nga Orari i punës (fillim para 12:00 → N1, ndryshe N2; e shtunë/e diel → Weekend); pa orar → sipas skanimit të parë.</div></div>
     <div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas operatorit <span class="sub">${h(fmtDateAl(pdDate))}</span></h3><div class="tablewrap"><table><thead><tr><th>Operatori</th><th>Ndërrimi</th><th>Skanime</th><th>Orë aktive</th><th>Skanime / orë</th><th>Koha</th></tr></thead><tbody>
       ${ppl.map(p=>`<tr><td><b>${h(p.name)}</b></td><td>${p.shift}</td><td>${p.n}</td><td>${p.activeH}</td><td data-sort="${p.perHour||0}"><b>${pdR(p.perHour)}</b></td><td class="small">${h(p.f||'')}${p.l&&p.l!==p.f? '–'+h(p.l) : ''}</td></tr>`).join('')}</tbody></table></div>
       <div class="hint">Skanim = një porosi e skanuar te korrieri. Emri është llogaria e hyrë në skanerin e POD — kuptimi për person vlen vetëm kur çdo operator hyn me llogarinë e vet. Skanime / orë = skanime ÷ orët me të paktën një skanim. ${D.excluded? D.excluded+' skanime nga llogari jashtë orarit nuk numërohen.' : ''}</div></div>
@@ -87,7 +84,10 @@ async function pdDraw(){
       <div class="tablewrap" style="margin-top:10px"><table class="heat"><thead><tr><th>Operatori</th>${hrs.map(x=>`<th>${String(x).padStart(2,'0')}</th>`).join('')}<th>Gjithsej</th></tr></thead><tbody>
       ${ppl.map(p=>`<tr><th style="text-align:left">${h(p.name)}</th>${hrs.map(x=>{ const n=p.hours[x]||0; return `<td style="background:rgba(17,91,146,${(n/maxH*0.85).toFixed(2)});color:${n/maxH>0.55?'#fff':'var(--text)'}">${n||''}</td>`; }).join('')}<td><b>${p.n}</b></td></tr>`).join('')}</tbody></table></div></div>
     ${pdPosts()}
-    ${pdTrend(sched)}`;
+    ${pdTrend(sched)}
+    <div class="card sh-card" style="margin:12px 0 0"><h3 style="margin-top:0">Sipas ndërrimit</h3><div class="tablewrap"><table><thead><tr><th>Ndërrimi</th><th>Operatorë</th><th>Skanime</th><th>Orë aktive</th><th>Skanime / orë</th></tr></thead><tbody>
+      ${shifts.map(x=>`<tr><td><b>${x.s}</b></td><td>${x.n}</td><td>${x.scans}</td><td>${x.h}</td><td><b>${x.h? pdR(x.scans/x.h) : '—'}</b></td></tr>`).join('')}</tbody></table></div>
+      <div class="hint">Ndërrimi i personit nga Orari i punës (fillim para 12:00 → N1, ndryshe N2; e shtunë/e diel → Weekend); pa orar → sipas skanimit të parë.</div></div>`;
 }
 function pdPosts(){
   const p=pdData.posts; if(!p) return '';

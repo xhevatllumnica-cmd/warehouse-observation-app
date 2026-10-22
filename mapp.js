@@ -11,7 +11,7 @@ let mpDate=null, mpData=null, mpSched={};
 async function renderMapp(v){
   if(!mpDate) mpDate=todayStr();
   v.innerHTML=pagehead('Mapp','Vendosja e njësive në rafte (mapping) në WMS: <b>sipas ditës, ndërrimit dhe operatorit</b>, mapp për orë, rreshta dhe seksione. Burimi: WMS (log-u i mapping), rifreskohet çdo orë 07–22. Vetëm stafi në Orarin e punës.','')
-    + `<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    + `<div class="card mod-ctl" style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <label class="small" style="display:flex;gap:6px;align-items:center">Data <input type="date" id="mpDate" value="${h(mpDate)}" max="${h(todayStr())}" style="width:auto;min-height:34px"></label>
         <button class="btn sm" id="mpToday">Sot</button><button class="btn sm" id="mpYday">Dje</button>
         <span class="small faint" id="mpAt" style="margin-left:auto"></span></div></div>
@@ -67,9 +67,6 @@ async function mpDraw(){
       ${kpiCard(T.r.toLocaleString(), 'Rreshta rafti të përdorur', 'shuma për operator · '+ppl.length+' operatorë')}
       ${kpiCard(secDay.length? secDay.length.toLocaleString() : '—', 'Seksione të prekura', secDay.length? 'të gjitha llogaritë e magazinës' : 'pa të dhëna')}
       ${kpiCard(T.h.toLocaleString(), 'Orë aktive gjithsej', T.units? mpR(T.units/Math.max(1,T.r))+' njësi për rresht' : '')}</div>
-    <div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas ndërrimit</h3><div class="tablewrap"><table><thead><tr><th>Ndërrimi</th><th>Operatorë</th><th>Rreshta</th><th>Mapp</th><th>Orë aktive</th><th>Njësi / orë</th></tr></thead><tbody>
-      ${shifts.map(x=>`<tr><td><b>${x.s}</b></td><td>${x.n}</td><td>${x.r}</td><td>${x.units}</td><td>${x.h}</td><td><b>${x.h? mpR(x.units/x.h) : '—'}</b></td></tr>`).join('')}</tbody></table></div>
-      <div class="hint">Ndërrimi i personit nga Orari i punës (fillim para 12:00 → N1, ndryshe N2; e shtunë/e diel → Weekend); pa orar → sipas mapp-it të parë.</div></div>
     <div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas operatorit <span class="sub">${h(fmtDateAl(mpDate))}</span></h3><div class="tablewrap"><table><thead><tr><th>Operatori</th><th>Ndërrimi</th><th>Rreshta</th><th>Seksione</th><th>Mapp</th><th>Njësi / rresht</th><th>Orë aktive</th><th>Njësi / orë</th><th>Koha</th></tr></thead><tbody>
       ${ppl.map(p=>`<tr><td><b>${h(p.name)}</b></td><td>${p.shift}</td><td>${p.r}</td><td>${p.z}</td><td>${p.units}</td><td data-sort="${p.r? p.units/p.r : 0}">${p.r? mpR(p.units/p.r) : '—'}</td><td>${p.activeH}</td>
         <td data-sort="${p.perHour||0}"><b>${mpR(p.perHour)}</b></td><td class="small">${h(p.f||'')}${p.l&&p.l!==p.f? '–'+h(p.l) : ''}</td></tr>`).join('')}</tbody></table></div>
@@ -81,7 +78,10 @@ async function mpDraw(){
       <div class="tablewrap" style="margin-top:10px"><table class="heat"><thead><tr><th>Operatori</th>${hrs.map(x=>`<th>${String(x).padStart(2,'0')}</th>`).join('')}<th>Gjithsej</th></tr></thead><tbody>
       ${ppl.map(p=>`<tr><th style="text-align:left">${h(p.name)}</th>${hrs.map(x=>{ const n=p.hours[x]||0; return `<td style="background:rgba(17,91,146,${(n/maxH*0.85).toFixed(2)});color:${n/maxH>0.55?'#fff':'var(--text)'}">${n||''}</td>`; }).join('')}<td><b>${p.units}</b></td></tr>`).join('')}</tbody></table></div></div>
     ${mpSections(secDay)}
-    ${mpTrend(sched)}`;
+    ${mpTrend(sched)}
+    <div class="card sh-card" style="margin:12px 0 0"><h3 style="margin-top:0">Sipas ndërrimit</h3><div class="tablewrap"><table><thead><tr><th>Ndërrimi</th><th>Operatorë</th><th>Rreshta</th><th>Mapp</th><th>Orë aktive</th><th>Njësi / orë</th></tr></thead><tbody>
+      ${shifts.map(x=>`<tr><td><b>${x.s}</b></td><td>${x.n}</td><td>${x.r}</td><td>${x.units}</td><td>${x.h}</td><td><b>${x.h? mpR(x.units/x.h) : '—'}</b></td></tr>`).join('')}</tbody></table></div>
+      <div class="hint">Ndërrimi i personit nga Orari i punës (fillim para 12:00 → N1, ndryshe N2; e shtunë/e diel → Weekend); pa orar → sipas mapp-it të parë.</div></div>`;
 }
 function mpSections(rows){
   rows=rows.slice().sort((a,b)=>b.n-a.n); if(!rows.length) return '';

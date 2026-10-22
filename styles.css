@@ -218,3 +218,11 @@ td.wrap,th.wrap{white-space:normal;min-width:180px}
   .content{padding:0}
   .card{break-inside:avoid;box-shadow:none}
 }
+
+/* Monitor (22.10.2026): Picking / Check-in / Check-out / Mapp / POD one after another; the module's own head, date bar and "Sipas ndërrimit" card are hidden */
+.mon-stage .pagehead, .mon-stage .mod-ctl, .mon-stage .sh-card { display:none !important; }
+.mon-head { display:flex; gap:12px; align-items:baseline; font-size:20px; margin:4px 2px 6px; }
+.mon-bar { height:5px; background:var(--line); border-radius:4px; overflow:hidden; margin-bottom:10px; }
+.mon-bar > div { height:100%; width:0; background:var(--accent); }
+.mon-wrap:fullscreen { background:var(--bg); padding:14px 18px; overflow:hidden; }
+.mon-wrap:fullscreen .mon-tools { display:none; }
