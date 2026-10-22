@@ -11,15 +11,19 @@ const MON_MODULES=[
   {id:'checkin', title:'Check-in',      render:()=>renderCheckin($('#monStage')),   reset:()=>{ ckDate=monDay||null; }, body:'#ckBody'},
   {id:'checkout',title:'Check-out',     render:()=>renderCheckout($('#monStage')),  reset:()=>{ coDate=monDay||null; }, body:'#coBody'},
   {id:'mapp',    title:'Mapp',          render:()=>renderMapp($('#monStage')),      reset:()=>{ mpDate=monDay||null; }, body:'#mpBody'},
-  {id:'podscan', title:'POD (skanime)', render:()=>renderPodScan($('#monStage')),   reset:()=>{ pdDate=monDay||null; }, body:'#pdBody'}];
+  {id:'podscan', title:'POD (skanime)', render:()=>renderPodScan($('#monStage')),   reset:()=>{ pdDate=monDay||null; }, body:'#pdBody'},
+  // "Proceset sipas operatorit" (people.js) for the one day, without the Claim column (22.10.2026); read again on every pass
+  {id:'proceset',title:'Proceset sipas operatorit', render:()=>renderPeopleProcess($('#monStage')), reset:()=>{ ppFrom=ppTo=(monDay||todayStr()); ppData=null; }, body:'#ppBody', noClaim:true}];
 const MON_DAYS=['E diel','E hënë','E martë','E mërkurë','E enjte','E premte','E shtunë'];
 let monToken=0, monPaused=false, monSkip=false, monRedo=false, monDay=null;   // monDay: the date picked in the header (null = today)
 const monGet=()=>{ try{ return JSON.parse(localStorage.getItem('monitorSettings')||'null'); }catch(e){ return null; } };
 const monSet=s=>{ try{ localStorage.setItem('monitorSettings', JSON.stringify(s)); }catch(e){} };
-function monSettings(){ const s=monGet()||{}; return {sec: Math.max(5, +s.sec||20), on: Array.isArray(s.on)? s.on : MON_MODULES.map(m=>m.id)}; }
+/* modules added after the settings were saved (not in "known") are switched on */
+function monSettings(){ const s=monGet()||{}, all=MON_MODULES.map(m=>m.id), known=Array.isArray(s.known)? s.known : all.filter(id=>id!=='proceset');
+  return {sec: Math.max(5, +s.sec||20), on: Array.isArray(s.on)? s.on.concat(all.filter(id=>!known.includes(id))) : all}; }
 function renderMonitor(v){
   const my=++monToken, S=monSettings(); monPaused=false; monSkip=false; monDay=null;
-  v.innerHTML=pagehead('Monitor','Modulet Picking, Check-in, Check-out, Mapp dhe POD (skanime) <b>një nga një në ekran</b>, secili për sekondat e zgjedhura (20 si parazgjedhje). Shfaqet çdo gjë e modulit përveç seksionit "Sipas ndërrimit". Për monitorin e magazinës shtyp "Ekran i plotë".','')
+  v.innerHTML=pagehead('Monitor','Modulet Picking, Check-in, Check-out, Mapp, POD (skanime) dhe Proceset sipas operatorit (pa kolonën Claim) <b>një nga një në ekran</b>, secili për sekondat e zgjedhura (20 si parazgjedhje). Shfaqet çdo gjë e modulit përveç seksionit "Sipas ndërrimit". Për monitorin e magazinës shtyp "Ekran i plotë".','')
     + `<div id="monWrap" class="mon-wrap">
         <div class="card mon-tools" style="margin-bottom:12px"><div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
           ${MON_MODULES.map(m=>`<label class="small" style="display:flex;gap:5px;align-items:center"><input type="checkbox" data-mon="${m.id}" ${S.on.includes(m.id)?'checked':''}> ${h(m.title)}</label>`).join('')}
@@ -31,7 +35,7 @@ function renderMonitor(v){
           <div class="mon-act"><input type="date" id="monDate" class="btn" title="Zgjidh datën" max="" style="padding:5px 8px"><button class="btn" id="monToday" title="Kthehu te sot">Sot</button><button class="btn" id="monRefresh" title="Rifresko modulin tani">⟳</button><button class="btn" id="monFull">⛶ Ekran i plotë</button></div></div>
         <div class="mon-bar"><div id="monFill"></div></div>
         <div class="mon-area" id="monArea"><div class="mon-stage" id="monStage"></div></div></div>`;
-  const save=()=>{ monSet({sec:Math.max(5,+$('#monSec').value||20), on:[...document.querySelectorAll('[data-mon]')].filter(c=>c.checked).map(c=>c.dataset.mon)}); };
+  const save=()=>{ monSet({sec:Math.max(5,+$('#monSec').value||20), known:MON_MODULES.map(m=>m.id), on:[...document.querySelectorAll('[data-mon]')].filter(c=>c.checked).map(c=>c.dataset.mon)}); };
   document.querySelectorAll('[data-mon]').forEach(c=>c.onchange=save); $('#monSec').onchange=save;
   $('#monPause').onclick=()=>{ monPaused=!monPaused; $('#monPause').textContent= monPaused? '▶ Vazhdo' : '⏸ Pauzë'; };
   $('#monNext').onclick=()=>{ monSkip=true; };
@@ -63,9 +67,9 @@ async function monLoop(my){
 }
 /* draw the module for today and wait until its body is no longer the "reading…" placeholder (a slow read: 30 s at most) */
 async function monShow(m, my){
-  const st=$('#monStage'); m.reset(); st.style.zoom=1; st.innerHTML='';
+  const st=$('#monStage'); m.reset(); window.PP_NO_CLAIM=!!m.noClaim; st.style.zoom=1; st.innerHTML='';
   await m.render();
-  for(let t=0; t<120 && monAlive(my); t++){ const b=document.querySelector(m.body); if(b && !/^Po lexohen/.test(b.innerText.trim())) break; await monSleep(250); }
+  for(let t=0; t<120 && monAlive(my); t++){ const b=document.querySelector(m.body); if(b && !/^Po lexohe/.test(b.innerText.trim())) break; await monSleep(250); }
   monSplit(); await monSleep(150); monFit();
 }
 /* the cards marked .mon-split (Picking "Sipas stacionit") are shown in two columns side by side: the rows are halved over two tables */

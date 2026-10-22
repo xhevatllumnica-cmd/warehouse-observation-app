@@ -49,15 +49,15 @@ function ppDraw(){
   const body=$('#ppBody'); if(!body||!ppData) return;
   if(ppData.error){ body.innerHTML=`<div class="card"><div class="empty">${h(ppData.error)}</div></div>`; return; }
   $('#ppAt').textContent='lexuar '+fmtTime(ppData.at);
-  const ops=ppData.ops||[], tot={}; PP_COLS.forEach(([k])=>tot[k]=ops.reduce((a,o)=>a+ppVal(o,k),0));
+  const ppCols=PP_COLS.filter(c=>!(window.PP_NO_CLAIM && c[0]==='claim')), ops=ppData.ops||[], tot={}; ppCols.forEach(([k])=>tot[k]=ops.reduce((a,o)=>a+ppVal(o,k),0));
   ['claimOrders','checkoutOrders','ref','ret'].forEach(k=>tot[k]=ops.reduce((a,o)=>a+(o[k]||0),0));
   const cell=(o,[k,,unit,sub])=>{ const n=ppVal(o,k), s=sub(o);
     return `<td class="num" data-sort="${n}"${k==='checkout'? ' style="'+PP_CO_STYLE+'"' : ''}>${n? `<b>${n.toLocaleString('de-DE')}</b>${unit? ' <span class="faint small"'+(k==='checkout'? ' style="color:inherit;opacity:.8"' : '')+'>'+unit+'</span>' : ''}${s? `<div class="faint small"${k==='checkout'? ' style="color:inherit;opacity:.8"' : ''}>${h(s)}</div>` : ''}` : '<span class="faint">—</span>'}</td>`; };
   const err=(ppData.errors||[]).map(e=>`<div class="note warn"><b>${h(e.error)}</b> — ${e.days.length} ditë (${e.days.map(fmtDateAl).join(', ')}): kjo kolonë nuk është e plotë për ato ditë.${/auth_expired/.test(e.error)? ' Hap deliveryplatform.gjirafamall.com në Chrome që sesioni të rinovohet, pastaj shtyp «Shfaq».' : ''}</div>`).join('');
   body.innerHTML= err + `<div class="card"><h3 style="margin-top:0">${h(fmtDateAl(ppData.from))}${ppData.to!==ppData.from? ' – '+h(fmtDateAl(ppData.to)) : ''} <span class="sub">${ops.length} operatorë · ${ppData.days} ditë</span></h3>
-    <div class="tablewrap"><table><thead><tr><th>Emri dhe Mbiemri</th>${PP_COLS.map(c=>`<th class="num"${c[0]==='checkout'? ' style="'+PP_CO_STYLE+'"' : ''}>${h(c[1])}</th>`).join('')}<th class="num">Ditë aktive</th></tr></thead>
-    <tbody>${ops.length? ops.map(o=>`<tr><td><b>${h(o.name)}</b></td>${PP_COLS.map(c=>cell(o,c)).join('')}<td class="num">${o.days}</td></tr>`).join('')
-      : `<tr><td colspan="${PP_COLS.length+2}"><div class="empty">Asnjë aktivitet i stafit në këtë periudhë.</div></td></tr>`}
-      ${ops.length? `<tr style="border-top:2px solid var(--line)"><td><b>Gjithsej</b></td>${PP_COLS.map(c=>cell(tot,c)).join('')}<td></td></tr>` : ''}</tbody></table></div>
+    <div class="tablewrap"><table><thead><tr><th>Emri dhe Mbiemri</th>${ppCols.map(c=>`<th class="num"${c[0]==='checkout'? ' style="'+PP_CO_STYLE+'"' : ''}>${h(c[1])}</th>`).join('')}<th class="num">Ditë aktive</th></tr></thead>
+    <tbody>${ops.length? ops.map(o=>`<tr><td><b>${h(o.name)}</b></td>${ppCols.map(c=>cell(o,c)).join('')}<td class="num">${o.days}</td></tr>`).join('')
+      : `<tr><td colspan="${ppCols.length+2}"><div class="empty">Asnjë aktivitet i stafit në këtë periudhë.</div></td></tr>`}
+      ${ops.length? `<tr style="border-top:2px solid var(--line)"><td><b>Gjithsej</b></td>${ppCols.map(c=>cell(tot,c)).join('')}<td></td></tr>` : ''}</tbody></table></div>
     <div class="hint" style="margin-top:8px"><b>Claim</b> = produkte të rezervuara për një porosi (WMS, log 3 me porosi — kuptim i nxjerrë nga të dhënat). <b>Picking</b> = produkte të skanuara në sesionet e picking-ut (databaza e WMS, rifreskim çdo orë 07–22). <b>Check-out</b> = porosi me check-out (porosi të ndryshme në log 4 + 18, si te Statistikat e WH). <b>POD</b> = porosi të skanuara për kurierët (Delivery Platform). <b>Check-In</b> = produkte të pranuara (log 2). <b>Mapping</b> = produkte të vendosura në raft (log 7). <b>Kthime/Refuzime</b> = porosi të refuzuara të pranuara (Delivery Platform) + produkte të kthyera të procesuara (WMS 20/21/22/29). Vetëm llogaritë e stafit të depos; llogaritë temp dhe ato pa emër nuk numërohen. Shifrat janë për planifikim dhe zhvillim, jo për masa disiplinore.</div></div>`;
 }

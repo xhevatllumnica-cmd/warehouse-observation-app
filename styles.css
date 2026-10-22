@@ -235,3 +235,4 @@ td.wrap,th.wrap{white-space:normal;min-width:180px}
 .mon-sub { color:var(--muted); font-size:clamp(13px,1.1vw,18px); margin-top:2px; }
 .mon-clock { margin-left:auto; font-size:clamp(28px,3vw,52px); font-weight:700; font-variant-numeric:tabular-nums; }
 .mon-act { display:flex; gap:8px; flex-wrap:wrap; }
+.mon-stage .filters { display:none !important; }
