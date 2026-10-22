@@ -1916,6 +1916,33 @@ http.createServer(async (req,resp)=>{
       resp.writeHead(r.error?(r.error==='auth_expired'?401:502):200, {'Content-Type':'application/json','Cache-Control':'no-store'});
       return resp.end(JSON.stringify(r));
     }
+    if(q.pathname==='/pod/scans'){   // app tab "POD (skanime)" (22.10.2026): orders scanned for the couriers, per day × scanner, hours and courier posts of the day — scanner name + counts only, same-origin only
+      const date=q.query.date||isoToday();
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || date>isoToday()) return json(400,{error:'Data duhet YYYY-MM-DD dhe jo në të ardhmen.'});
+      const days=[], hours=[]; let error=null, complete=true;
+      const loc=t=>{ const d=new Date(t); return {d:d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()), h:d.getHours(), hm:p2(d.getHours())+':'+p2(d.getMinutes())}; };
+      for(let i=13;i>=0 && !error;i--){
+        const iso=isoAddDays(date,-i), r=await fetchPodScans(iso);
+        if(r.error){ error=r.error; if(r.error==='auth_expired') deliverySessionExpired=true; break; }
+        if(!r.complete) complete=false;
+        const by={}, byH={};
+        (r.rows||[]).forEach(x=>{ const L=loc(x.t); if(L.d!==iso) return; const a=by[x.scanner]||(by[x.scanner]={fn:x.scanner, n:0, f:L.hm, l:L.hm}); a.n++; if(L.hm<a.f) a.f=L.hm; if(L.hm>a.l) a.l=L.hm;
+          if(iso===date){ const k=x.scanner+'|'+L.h; byH[k]=byH[k]||{fn:x.scanner, h:L.h, n:0}; byH[k].n++; } });
+        Object.values(by).forEach(a=>days.push(Object.assign({d:iso}, a)));
+        Object.values(byH).forEach(a=>hours.push(Object.assign({d:iso}, a)));
+      }
+      if(error){ resp.writeHead(error==='auth_expired'?401:502,{'Content-Type':'application/json','Cache-Control':'no-store'}); return resp.end(JSON.stringify({error})); }
+      // courier posts of the day (BEKI / Express / Fiks): the scanned order → the day's POD delivery → driver name; read in the background
+      let posts=null; const cur=podScanCache[date];
+      if(cur && cur.v){ const pc=podCache[date], ttl= date>=isoToday()? 5*60000 : 6*3600000;
+        if(!pc || Date.now()-pc.t>ttl) fetchPodDay(date).catch(()=>{});
+        if(!pc) posts={loading:true};
+        else { const post=new Map(); (pc.v.items||[]).forEach(x=>post.set(x.orderId+'|'+x.platformId, String(x.driverName||'')));
+          posts={posts:POD_BOARD_POSTS.map(([name])=>({name, n:0})), other:0, unknown:0};
+          (cur.v.rows||[]).forEach(x=>{ const d=post.get(x.oid+'|'+x.pid); if(d==null){ posts.unknown++; return; } const i=POD_BOARD_POSTS.findIndex(([,re])=>re.test(d)); if(i>=0) posts.posts[i].n++; else posts.other++; }); } }
+      resp.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});
+      return resp.end(JSON.stringify({date, days, hours, posts, complete, at:new Date().toISOString()}));
+    }
     if(q.pathname==='/delivery/podlogs'){
       const start=q.query.start || isoAddDays(isoToday(),-7);
       const end=q.query.end || isoToday();

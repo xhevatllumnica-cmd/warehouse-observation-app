@@ -463,6 +463,8 @@ const ROUTES = [
   {id:'picking', title:'Picking', ic:'🧺', render:renderPicking},
   {id:'checkin', title:'Check-in', ic:'📥', render:renderCheckin},
   {id:'checkout', title:'Check-out', ic:'📤', render:renderCheckout},
+  {id:'mapp', title:'Mapp', ic:'🗄️', render:renderMapp},
+  {id:'podscan', title:'POD (skanime)', ic:'🧾', render:renderPodScan},
   {id:'orders', title:'Order Flow', ic:'➜', render:renderOrders},
   {id:'inbound', title:'Product / Inbound Flow', ic:'⇩', render:renderInbound},
   {id:'pod', title:'POD — Proof of Delivery', ic:'🚚', render:renderPod},

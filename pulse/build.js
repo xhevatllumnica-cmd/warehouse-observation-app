@@ -117,6 +117,8 @@ const picking= 'pickS' in E? {at:E._at||null, hours:J(E.pickH), days:J(E.pickS),
 const checkin= 'ciS' in E? {at:E._at||null, hours:J(E.ciH), days:J(E.ciS), supplies:J(E.ciSu)} : null;
 // check-out (app tab "Check-out", 22.10.2026): per local day × hour (coH), day × account (coS), day × platform (coP); null until block E has them
 const checkout= 'coS' in E? {at:E._at||null, hours:J(E.coH), days:J(E.coS), platforms:J(E.coP)} : null;
+// mapping (app tab "Mapp", 22.10.2026): per local day × hour (mpH), day × account (mpS), day × section (mpZ); null until block E has them
+const mapping= 'mpS' in E? {at:E._at||null, hours:J(E.mpH), days:J(E.mpS), sections:J(E.mpZ)} : null;
 // check-ins with no check-in log (bulk check-in, block E ciBulk, 19.10.2026): the agent adds them to the person's check-ins
 const checkinBulk= 'ciBulk' in E? {at:E._at||null, rows:J(E.ciBulk)} : null;
 // pick → check-out per pick day (block E pickCo, 21.10.2026): minutes as comma lists, for "Koha ndërmjet proceseve" (Statistikat e WH)
@@ -201,7 +203,7 @@ const blocks={}; GROUPS.concat(OPTIONAL).forEach(g=>{ const r=rows[g], fl=failed
   if(!r && !fl) return;
   blocks[g]={at, gen: r&&r.gen || null, failedAt: fl&&(!at || fl.ts>Date.parse(at))? new Date(fl.ts).toISOString() : null, error: fl&&(!at || fl.ts>Date.parse(at))? fl.error : null}; });
 const boardStale= !board || !String(board.gen||'').startsWith(today);
-const data={ version:1, staffFilter: STAFF? {names:STAFF.n, from:STAFF.from||null, keys:STAFF.keys||null, unfiltered:[...new Set(unfiltered)]} : null, blocks, shipments, returns, board, inbound: inb? {at:rows.F._at||null, batches:inb, daily:inbDaily} : null, orders: ordG, picking, checkin, checkout, checkinBulk, pickCo, ciCo, campaign: campH, capacity, generatedAt:A.gen, lastLog:A.lastLog, lastOrder:A.lastOrder, builtAt:new Date().toISOString(),
+const data={ version:1, staffFilter: STAFF? {names:STAFF.n, from:STAFF.from||null, keys:STAFF.keys||null, unfiltered:[...new Set(unfiltered)]} : null, blocks, shipments, returns, board, inbound: inb? {at:rows.F._at||null, batches:inb, daily:inbDaily} : null, orders: ordG, picking, checkin, checkout, mapping, checkinBulk, pickCo, ciCo, campaign: campH, capacity, generatedAt:A.gen, lastLog:A.lastLog, lastOrder:A.lastOrder, builtAt:new Date().toISOString(),
   D:{week, bands, hour, pay, period, rates, daily, o2c, upo, status, state, dwell, sect, insp, diff, sup, car, pick, st, inv},
   K:{avg:r1(avg), sd:r1(sd), per, statusNames, onShelf:Dd.onShelf, rowsStock:Dd.rowsStock, rowsTotal:Dd.rowsTotal, diffOpen:Dd.diffOpen, diffTotal:Dd.diffTotal,
      nfOpen:Dd.nfOpen, nfTotal:Dd.nfTotal, retOpen:Dd.retOpen, lateOpen:E.lateOpen, supStarted:E.supStarted} };

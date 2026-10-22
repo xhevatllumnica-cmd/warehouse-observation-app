@@ -325,7 +325,33 @@ SELECT /*pulse:E*/
  (SELECT CONVERT(varchar(10),pl.InsertDateTime,23) d, pl.PlatformId p, COUNT(*) n, COUNT(DISTINCT pl.OrderId) o
   FROM ProductLogs pl WITH (NOLOCK) JOIN Orders o ON o.OrderId=pl.OrderId AND o.PlatformId=pl.PlatformId AND o.WarehouseId=1
   WHERE pl.LogTypeId IN (4,18) AND pl.OrderId>0 AND pl.InsertDateTime>=DATEADD(day,-36,CAST(GETDATE() AS date))
-  GROUP BY CONVERT(varchar(10),pl.InsertDateTime,23), pl.PlatformId FOR JSON PATH) coP
+  GROUP BY CONVERT(varchar(10),pl.InsertDateTime,23), pl.PlatformId FOR JSON PATH) coP,
+ -- Mapp (app tab "Mapp", the lead 22.10.2026, same layout as Picking / Check-in): a map = one ProductLogs LogTypeId 7 row (a unit put on a
+ -- shelf row, local time), warehouse-01 accounts, the last 36 days (mpZ: 14).
+ -- mpH: units mapped per local day × hour × account.
+ (SELECT CONVERT(varchar(10),pl.InsertDateTime,23) d, DATEPART(hour,pl.InsertDateTime) h, pl.UpdateBy u, MIN(LTRIM(RTRIM(ISNULL(us.FirstName,'')+' '+ISNULL(us.LastName,'')))) fn, COUNT(*) n
+  FROM ProductLogs pl WITH (NOLOCK)
+  JOIN (SELECT UserId, MIN(FirstName) FirstName, MIN(LastName) LastName FROM Users WHERE UserWarehouseId=1 AND UserId>0 GROUP BY UserId) us ON us.UserId=pl.UpdateBy
+  WHERE pl.LogTypeId=7 AND pl.InsertDateTime>=DATEADD(day,-36,CAST(GETDATE() AS date))
+  GROUP BY CONVERT(varchar(10),pl.InsertDateTime,23), DATEPART(hour,pl.InsertDateTime), pl.UpdateBy FOR JSON PATH) mpH,
+ -- mpS: per local day × account: units (n), distinct shelf rows (r), distinct sections (z), first / last time. The row of a unit = its latest ProductCheckIns row.
+ (SELECT d, u, MIN(fn) fn, COUNT(*) n, COUNT(DISTINCT rid) r, COUNT(DISTINCT sec) z, MIN(CONVERT(varchar(5),t,108)) f, MAX(CONVERT(varchar(5),t,108)) l
+  FROM (SELECT CONVERT(varchar(10),pl.InsertDateTime,23) d, pl.UpdateBy u, LTRIM(RTRIM(ISNULL(us.FirstName,'')+' '+ISNULL(us.LastName,''))) fn, pl.InsertDateTime t, c.RowId rid, c.SectionName sec
+        FROM ProductLogs pl WITH (NOLOCK)
+        JOIN (SELECT UserId, MIN(FirstName) FirstName, MIN(LastName) LastName FROM Users WHERE UserWarehouseId=1 AND UserId>0 GROUP BY UserId) us ON us.UserId=pl.UpdateBy
+        OUTER APPLY (SELECT TOP 1 c0.RowId, se.SectionName FROM ProductCheckIns c0 LEFT JOIN Rows r ON r.Id=c0.RowId LEFT JOIN Shelves sh ON sh.Id=r.ShelfId LEFT JOIN Sections se ON se.Id=sh.SectionId
+                     WHERE c0.ProductItemUniqueIdentifier=pl.ProductItemUniqueIdentifierId ORDER BY c0.Id DESC) c
+        WHERE pl.LogTypeId=7 AND pl.InsertDateTime>=DATEADD(day,-36,CAST(GETDATE() AS date))) x
+  GROUP BY d, u FOR JSON PATH) mpS,
+ -- mpZ: per local day × section: units (n), accounts (ops), distinct shelf rows (r), first / last time.
+ (SELECT d, sec, COUNT(*) n, COUNT(DISTINCT u) ops, COUNT(DISTINCT rid) r, MIN(CONVERT(varchar(5),t,108)) f, MAX(CONVERT(varchar(5),t,108)) l
+  FROM (SELECT CONVERT(varchar(10),pl.InsertDateTime,23) d, pl.UpdateBy u, pl.InsertDateTime t, c.RowId rid, ISNULL(LTRIM(RTRIM(c.SectionName)),'') sec
+        FROM ProductLogs pl WITH (NOLOCK)
+        JOIN (SELECT UserId FROM Users WHERE UserWarehouseId=1 AND UserId>0 GROUP BY UserId) us ON us.UserId=pl.UpdateBy
+        OUTER APPLY (SELECT TOP 1 c0.RowId, se.SectionName FROM ProductCheckIns c0 LEFT JOIN Rows r ON r.Id=c0.RowId LEFT JOIN Shelves sh ON sh.Id=r.ShelfId LEFT JOIN Sections se ON se.Id=sh.SectionId
+                     WHERE c0.ProductItemUniqueIdentifier=pl.ProductItemUniqueIdentifierId ORDER BY c0.Id DESC) c
+        WHERE pl.LogTypeId=7 AND pl.InsertDateTime>=DATEADD(day,-14,CAST(GETDATE() AS date))) x
+  GROUP BY d, sec FOR JSON PATH) mpZ
 
 -- @F inbound batches (Product / Inbound Flow): every supply of warehouse 01 from yesterday and today, plus older ones
 --    (≤14 days) that still have units waiting to be mapped. Stages: arrival = invoice registered (or the truck's actual
