@@ -93,7 +93,7 @@ function pdPosts(){
   const p=pdData.posts; if(!p) return '';
   if(p.loading) return `<div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas postës së korrierit</h3><div class="empty">Dorëzimet e ditës po lexohen nga Delivery Platform (10–20 sek) — rihap datën pas pak.</div></div>`;
   const tot=p.posts.reduce((a,x)=>a+x.n,0)+p.other+p.unknown;
-  return `<div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas postës së korrierit</h3><div class="tablewrap"><table style="max-width:420px"><thead><tr><th>Posta</th><th>Skanime</th><th>Pjesa</th></tr></thead><tbody>
+  return `<div class="card mon-split" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas postës së korrierit</h3><div class="tablewrap"><table style="max-width:420px"><thead><tr><th>Posta</th><th>Skanime</th><th>Pjesa</th></tr></thead><tbody>
     ${p.posts.map(x=>`<tr><td>${h(x.name)}</td><td>${x.n}</td><td>${pdPct(x.n,tot)}</td></tr>`).join('')}<tr><td>Të tjera</td><td>${p.other}</td><td>${pdPct(p.other,tot)}</td></tr>${p.unknown? `<tr><td>Pa dorëzim të gjetur</td><td>${p.unknown}</td><td>${pdPct(p.unknown,tot)}</td></tr>` : ''}</tbody></table></div>
     <div class="hint">Skanimi s'e njeh korrierin; çdo porosi e skanuar kërkohet te dorëzimet e ditës (sipas porosisë dhe platformës). Të gjitha llogaritë.</div></div>`;
 }
