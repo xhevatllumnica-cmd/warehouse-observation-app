@@ -7,18 +7,18 @@
    "Ekran i plotë" puts only the monitor on the screen; Esc leaves it. Leaving the tab stops the loop.
    =======================================================================*/
 const MON_MODULES=[
-  {id:'picking', title:'Picking',       render:()=>renderPicking($('#monStage')),   reset:()=>{ pkDate=null; }, body:'#pkBody'},
-  {id:'checkin', title:'Check-in',      render:()=>renderCheckin($('#monStage')),   reset:()=>{ ckDate=null; }, body:'#ckBody'},
-  {id:'checkout',title:'Check-out',     render:()=>renderCheckout($('#monStage')),  reset:()=>{ coDate=null; }, body:'#coBody'},
-  {id:'mapp',    title:'Mapp',          render:()=>renderMapp($('#monStage')),      reset:()=>{ mpDate=null; }, body:'#mpBody'},
-  {id:'podscan', title:'POD (skanime)', render:()=>renderPodScan($('#monStage')),   reset:()=>{ pdDate=null; }, body:'#pdBody'}];
+  {id:'picking', title:'Picking',       render:()=>renderPicking($('#monStage')),   reset:()=>{ pkDate=monDay||null; }, body:'#pkBody'},
+  {id:'checkin', title:'Check-in',      render:()=>renderCheckin($('#monStage')),   reset:()=>{ ckDate=monDay||null; }, body:'#ckBody'},
+  {id:'checkout',title:'Check-out',     render:()=>renderCheckout($('#monStage')),  reset:()=>{ coDate=monDay||null; }, body:'#coBody'},
+  {id:'mapp',    title:'Mapp',          render:()=>renderMapp($('#monStage')),      reset:()=>{ mpDate=monDay||null; }, body:'#mpBody'},
+  {id:'podscan', title:'POD (skanime)', render:()=>renderPodScan($('#monStage')),   reset:()=>{ pdDate=monDay||null; }, body:'#pdBody'}];
 const MON_DAYS=['E diel','E hënë','E martë','E mërkurë','E enjte','E premte','E shtunë'];
-let monToken=0, monPaused=false, monSkip=false, monRedo=false;
+let monToken=0, monPaused=false, monSkip=false, monRedo=false, monDay=null;   // monDay: the date picked in the header (null = today)
 const monGet=()=>{ try{ return JSON.parse(localStorage.getItem('monitorSettings')||'null'); }catch(e){ return null; } };
 const monSet=s=>{ try{ localStorage.setItem('monitorSettings', JSON.stringify(s)); }catch(e){} };
 function monSettings(){ const s=monGet()||{}; return {sec: Math.max(5, +s.sec||20), on: Array.isArray(s.on)? s.on : MON_MODULES.map(m=>m.id)}; }
 function renderMonitor(v){
-  const my=++monToken, S=monSettings(); monPaused=false; monSkip=false;
+  const my=++monToken, S=monSettings(); monPaused=false; monSkip=false; monDay=null;
   v.innerHTML=pagehead('Monitor','Modulet Picking, Check-in, Check-out, Mapp dhe POD (skanime) <b>një nga një në ekran</b>, secili për sekondat e zgjedhura (20 si parazgjedhje). Shfaqet çdo gjë e modulit përveç seksionit "Sipas ndërrimit". Për monitorin e magazinës shtyp "Ekran i plotë".','')
     + `<div id="monWrap" class="mon-wrap">
         <div class="card mon-tools" style="margin-bottom:12px"><div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
@@ -28,7 +28,7 @@ function renderMonitor(v){
         <div class="mon-top"><div class="mon-stripe"></div>
           <div><div class="mon-title"><span id="monTitle">…</span> <span class="small faint" id="monPos" style="font-weight:400"></span></div><div class="mon-sub" id="monSub">—</div></div>
           <div class="mon-clock" id="monClock">--:--</div>
-          <div class="mon-act"><input type="date" id="monDate" class="btn" disabled title="Data e sotme" style="padding:5px 8px"><button class="btn" id="monRefresh" title="Rifresko modulin tani">⟳</button><button class="btn" id="monFull">⛶ Ekran i plotë</button></div></div>
+          <div class="mon-act"><input type="date" id="monDate" class="btn" title="Zgjidh datën" max="" style="padding:5px 8px"><button class="btn" id="monToday" title="Kthehu te sot">Sot</button><button class="btn" id="monRefresh" title="Rifresko modulin tani">⟳</button><button class="btn" id="monFull">⛶ Ekran i plotë</button></div></div>
         <div class="mon-bar"><div id="monFill"></div></div>
         <div class="mon-area" id="monArea"><div class="mon-stage" id="monStage"></div></div></div>`;
   const save=()=>{ monSet({sec:Math.max(5,+$('#monSec').value||20), on:[...document.querySelectorAll('[data-mon]')].filter(c=>c.checked).map(c=>c.dataset.mon)}); };
@@ -37,9 +37,12 @@ function renderMonitor(v){
   $('#monNext').onclick=()=>{ monSkip=true; };
   $('#monFull').onclick=()=>{ const w=$('#monWrap'); if(document.fullscreenElement) document.exitFullscreen(); else if(w.requestFullscreen) w.requestFullscreen(); };
   $('#monRefresh').onclick=()=>{ monRedo=true; };
+  $('#monDate').onchange=e=>{ const v=e.target.value; if(!v || v>todayStr()){ clock(); return; } monDay= v===todayStr()? null : v; clock(); monRedo=true; };
+  $('#monToday').onclick=()=>{ monDay=null; clock(); monRedo=true; };
   const clock=()=>{ const c=$('#monClock'); if(!c) return; const n=new Date(), iso=fmtLocalDate(n);
     c.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
-    $('#monSub').textContent=MON_DAYS[n.getDay()]+', '+fmtDateAl(iso); $('#monDate').value=iso; }; clock();
+    const day=monDay||iso, dd=new Date(day+'T12:00:00');
+    $('#monSub').textContent=MON_DAYS[dd.getDay()]+', '+fmtDateAl(day)+(monDay? ' · data e zgjedhur' : ''); const di=$('#monDate'); di.max=iso; di.value=day; }; clock();
   const ck=setInterval(()=>{ if(my!==monToken||!$('#monClock')) return clearInterval(ck); clock(); }, 1000);
   monLoop(my);
 }
