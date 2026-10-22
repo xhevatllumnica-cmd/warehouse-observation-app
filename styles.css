@@ -226,3 +226,6 @@ td.wrap,th.wrap{white-space:normal;min-width:180px}
 .mon-bar > div { height:100%; width:0; background:var(--accent); }
 .mon-wrap:fullscreen { background:var(--bg); padding:14px 18px; overflow:hidden; }
 .mon-wrap:fullscreen .mon-tools { display:none; }
+.mon-stage .mon-hide { display:none !important; }
+.mon-cols { display:flex; gap:18px; align-items:flex-start; }
+.mon-cols > table { flex:1 1 0; min-width:0; }

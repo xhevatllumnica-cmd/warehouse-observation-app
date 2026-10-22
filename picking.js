@@ -87,12 +87,12 @@ async function pkDraw(){
 }
 function pkStations(){
   const rows=(pkData.stations||[]).filter(r=>r.d===pkDate).sort((a,b)=>b.sc-a.sc); if(!rows.length) return '';
-  return `<div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas stacionit</h3><div class="tablewrap"><table style="max-width:560px"><thead><tr><th>Stacioni</th><th>Sesione</th><th>Porosi</th><th>Njësi të skanuara</th></tr></thead><tbody>
+  return `<div class="card mon-split" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas stacionit</h3><div class="tablewrap"><table style="max-width:560px"><thead><tr><th>Stacioni</th><th>Sesione</th><th>Porosi</th><th>Njësi të skanuara</th></tr></thead><tbody>
     ${rows.map(r=>`<tr><td>${h(r.st||'(pa stacion)')}</td><td>${r.s}</td><td>${r.o}</td><td>${r.sc}</td></tr>`).join('')}</tbody></table></div><div class="hint">Të gjitha llogaritë (stacioni nuk e njeh personin).</div></div>`;
 }
 function pkTrend(sched){
   const days=[...new Set(pkData.days.map(r=>r.d))].filter(d=>d<=pkDate).sort().slice(-14).reverse(); if(!days.length) return '';
-  return `<div class="card"><h3 style="margin-top:0">14 ditët e fundit</h3><div class="tablewrap"><table><thead><tr><th>Data</th><th>Pickers</th><th>Sesione</th><th>Porosi</th><th>Picks</th><th>Skanuar / kërkuar</th><th>Picks / orë</th></tr></thead><tbody>
+  return `<div class="card mon-hide"><h3 style="margin-top:0">14 ditët e fundit</h3><div class="tablewrap"><table><thead><tr><th>Data</th><th>Pickers</th><th>Sesione</th><th>Porosi</th><th>Picks</th><th>Skanuar / kërkuar</th><th>Picks / orë</th></tr></thead><tbody>
     ${days.map(d=>{ const P=pkPeople(d, sched).people, s=k=>P.reduce((a,p)=>a+(+p[k]||0),0), hh=s('activeH');
       return `<tr><td data-sort="${d}"><a href="#" data-pkd="${d}">${h(fmtDateAl(d))}</a></td><td>${P.length}</td><td>${s('s')}</td><td>${s('o')}</td><td>${s('picks')}</td><td>${s('sc')} / ${s('rq')} <span class="faint">(${pkPct(s('sc'),s('rq'))})</span></td><td>${hh? pkR(s('picks')/hh) : '—'}</td></tr>`; }).join('')}</tbody></table></div>
     <div class="hint">Kliko një datë për detajet. Sesionet numërohen sipas ditës kur nisin; picks sipas orës së skanimit.</div></div>`;

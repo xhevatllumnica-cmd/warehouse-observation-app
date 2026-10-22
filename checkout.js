@@ -85,12 +85,12 @@ async function coDraw(){
 function coPlatforms(){
   const rows=(coData.platforms||[]).filter(r=>r.d===coDate).sort((a,b)=>a.p-b.p); if(!rows.length) return '';
   const nm=p=> p===2? 'Gjirafa50' : p===1? 'Gjirafa Mall' : 'Platforma '+p;
-  return `<div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas platformës</h3><div class="tablewrap"><table style="max-width:520px"><thead><tr><th>Platforma</th><th>Porosi</th><th>Njësi të dërguara</th><th>Njësi / porosi</th></tr></thead><tbody>
+  return `<div class="card mon-hide" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas platformës</h3><div class="tablewrap"><table style="max-width:520px"><thead><tr><th>Platforma</th><th>Porosi</th><th>Njësi të dërguara</th><th>Njësi / porosi</th></tr></thead><tbody>
     ${rows.map(r=>`<tr><td>${h(nm(r.p))}</td><td>${r.o}</td><td>${r.n}</td><td>${r.o? coR(r.n/r.o) : '—'}</td></tr>`).join('')}</tbody></table></div><div class="hint">Porositë e magazinës 01, të gjitha llogaritë (një porosi numërohet një herë, jo për person).</div></div>`;
 }
 function coTrend(sched){
   const days=[...new Set(coData.days.map(r=>r.d))].filter(d=>d<=coDate).sort().slice(-14).reverse(); if(!days.length) return '';
-  return `<div class="card"><h3 style="margin-top:0">14 ditët e fundit</h3><div class="tablewrap"><table><thead><tr><th>Data</th><th>Operatorë</th><th>Porosi</th><th>Check-out</th><th>Gjirafa50</th><th>Njësi / orë</th></tr></thead><tbody>
+  return `<div class="card mon-hide"><h3 style="margin-top:0">14 ditët e fundit</h3><div class="tablewrap"><table><thead><tr><th>Data</th><th>Operatorë</th><th>Porosi</th><th>Check-out</th><th>Gjirafa50</th><th>Njësi / orë</th></tr></thead><tbody>
     ${days.map(d=>{ const P=coPeople(d, sched).people, s=k=>P.reduce((a,p)=>a+(+p[k]||0),0), hh=s('activeH');
       return `<tr><td data-sort="${d}"><a href="#" data-cod="${d}">${h(fmtDateAl(d))}</a></td><td>${P.length}</td><td>${s('o')}</td><td>${s('units')}</td><td>${s('g')} <span class="faint">(${coPct(s('g'),s('o'))})</span></td><td>${hh? coR(s('units')/hh) : '—'}</td></tr>`; }).join('')}</tbody></table></div>
     <div class="hint">Kliko një datë për detajet. Check-out sipas ditës dhe orës së skanimit.</div></div>`;

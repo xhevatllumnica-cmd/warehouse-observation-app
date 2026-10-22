@@ -88,12 +88,12 @@ async function ckDraw(){
 }
 function ckSupplies(){
   const rows=(ckData.supplies||[]).filter(r=>r.d===ckDate).sort((a,b)=>b.n-a.n); if(!rows.length) return '';
-  return `<div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas furnizimit <span class="sub">${rows.length} furnizime</span></h3><div class="tablewrap"><table style="max-width:680px"><thead><tr><th>Furnizimi (supply)</th><th>Check-in</th><th>Produkte</th><th>Operatorë</th><th>Koha</th></tr></thead><tbody>
+  return `<div class="card mon-hide" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas furnizimit <span class="sub">${rows.length} furnizime</span></h3><div class="tablewrap"><table style="max-width:680px"><thead><tr><th>Furnizimi (supply)</th><th>Check-in</th><th>Produkte</th><th>Operatorë</th><th>Koha</th></tr></thead><tbody>
     ${rows.slice(0,40).map(r=>`<tr><td>${h(r.sid||'(pa furnizim)')}</td><td>${r.n}</td><td>${r.k}</td><td>${r.ops}</td><td class="small">${h(r.f||'')}${r.l&&r.l!==r.f? '–'+h(r.l) : ''}</td></tr>`).join('')}</tbody></table></div><div class="hint">Të gjitha llogaritë e magazinës (jo vetëm stafi në orar)${rows.length>40? '; 40 më të mëdhenjtë' : ''}. Furnizimi i një njësie = rreshti i fundit i saj te ProductCheckIns.</div></div>`;
 }
 function ckTrend(sched){
   const days=[...new Set(ckData.days.map(r=>r.d))].filter(d=>d<=ckDate).sort().slice(-14).reverse(); if(!days.length) return '';
-  return `<div class="card"><h3 style="margin-top:0">14 ditët e fundit</h3><div class="tablewrap"><table><thead><tr><th>Data</th><th>Operatorë</th><th>Furnizime</th><th>Check-in</th><th>Me porosi</th><th>Njësi / orë</th></tr></thead><tbody>
+  return `<div class="card mon-hide"><h3 style="margin-top:0">14 ditët e fundit</h3><div class="tablewrap"><table><thead><tr><th>Data</th><th>Operatorë</th><th>Furnizime</th><th>Check-in</th><th>Me porosi</th><th>Njësi / orë</th></tr></thead><tbody>
     ${days.map(d=>{ const P=ckPeople(d, sched).people, s=k=>P.reduce((a,p)=>a+(+p[k]||0),0), hh=s('activeH');
       return `<tr><td data-sort="${d}"><a href="#" data-ckd="${d}">${h(fmtDateAl(d))}</a></td><td>${P.length}</td><td>${s('s')}</td><td>${s('units')}</td><td>${s('o')} <span class="faint">(${ckPct(s('o'),s('units'))})</span></td><td>${hh? ckR(s('units')/hh) : '—'}</td></tr>`; }).join('')}</tbody></table></div>
     <div class="hint">Kliko një datë për detajet. Check-in sipas ditës dhe orës së skanimit.</div></div>`;

@@ -55,7 +55,18 @@ async function monShow(m, my){
   const st=$('#monStage'); m.reset(); st.style.zoom=1; st.innerHTML='';
   await m.render();
   for(let t=0; t<120 && monAlive(my); t++){ const b=document.querySelector(m.body); if(b && !/^Po lexohen/.test(b.innerText.trim())) break; await monSleep(250); }
-  await monSleep(150); monFit();
+  monSplit(); await monSleep(150); monFit();
+}
+/* the cards marked .mon-split (Picking "Sipas stacionit") are shown in two columns side by side: the rows are halved over two tables */
+function monSplit(){
+  document.querySelectorAll('#monStage .mon-split').forEach(c=>{
+    const t=c.querySelector('table'), body=t&&t.querySelector('tbody'); if(!body) return;
+    const rows=[...body.children]; if(rows.length<2) return;
+    const half=Math.ceil(rows.length/2), t2=t.cloneNode(true), b2=t2.querySelector('tbody');
+    b2.innerHTML=''; rows.slice(half).forEach(r=>b2.appendChild(r));
+    [t,t2].forEach(x=>{ x.style.maxWidth='none'; x.style.width='100%'; });
+    const wrap=document.createElement('div'); wrap.className='mon-cols'; t.parentNode.insertBefore(wrap,t); wrap.appendChild(t); wrap.appendChild(t2);
+  });
 }
 /* a module taller than the screen is scaled down to fit (0.6 at least); a short one is enlarged a little (1.25 at most).
    If it still does not fit at 0.6, the area scrolls by itself from top to bottom while the module is shown (see monWait). */

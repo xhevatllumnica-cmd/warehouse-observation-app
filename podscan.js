@@ -99,7 +99,7 @@ function pdPosts(){
 }
 function pdTrend(sched){
   const days=[...new Set(pdData.days.map(r=>r.d))].filter(d=>d<=pdDate).sort().slice(-14).reverse(); if(!days.length) return '';
-  return `<div class="card"><h3 style="margin-top:0">14 ditët e fundit</h3><div class="tablewrap"><table><thead><tr><th>Data</th><th>Operatorë</th><th>Skanime</th><th>Orë aktive</th><th>Skanime / orë</th></tr></thead><tbody>
+  return `<div class="card mon-hide"><h3 style="margin-top:0">14 ditët e fundit</h3><div class="tablewrap"><table><thead><tr><th>Data</th><th>Operatorë</th><th>Skanime</th><th>Orë aktive</th><th>Skanime / orë</th></tr></thead><tbody>
     ${days.map(d=>{ const P=pdPeople(d, sched).people, s=k=>P.reduce((a,p)=>a+(+p[k]||0),0), hh=s('activeH');
       return `<tr><td data-sort="${d}"><a href="#" data-pdd="${d}">${h(fmtDateAl(d))}</a></td><td>${P.length}</td><td>${s('n')}</td><td>${hh||'—'}</td><td>${hh? pdR(s('n')/hh) : '—'}</td></tr>`; }).join('')}</tbody></table></div>
     <div class="hint">Kliko një datë për detajet (orët për orë lexohen për datën e zgjedhur). Skanime sipas ditës dhe orës së skanimit.</div></div>`;

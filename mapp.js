@@ -85,12 +85,12 @@ async function mpDraw(){
 }
 function mpSections(rows){
   rows=rows.slice().sort((a,b)=>b.n-a.n); if(!rows.length) return '';
-  return `<div class="card" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas seksionit <span class="sub">${rows.length} seksione</span></h3><div class="tablewrap"><table style="max-width:680px"><thead><tr><th>Seksioni</th><th>Mapp</th><th>Rreshta</th><th>Operatorë</th><th>Koha</th></tr></thead><tbody>
+  return `<div class="card mon-hide" style="margin-bottom:12px"><h3 style="margin-top:0">Sipas seksionit <span class="sub">${rows.length} seksione</span></h3><div class="tablewrap"><table style="max-width:680px"><thead><tr><th>Seksioni</th><th>Mapp</th><th>Rreshta</th><th>Operatorë</th><th>Koha</th></tr></thead><tbody>
     ${rows.slice(0,40).map(r=>`<tr><td>${h(r.sec||'(pa seksion)')}</td><td>${r.n}</td><td>${r.r}</td><td>${r.ops}</td><td class="small">${h(r.f||'')}${r.l&&r.l!==r.f? '–'+h(r.l) : ''}</td></tr>`).join('')}</tbody></table></div><div class="hint">Të gjitha llogaritë e magazinës (jo vetëm stafi në orar)${rows.length>40? '; 40 më të mëdhenjtë' : ''}. Seksioni = vendi aktual i njësisë (rreshti i fundit te ProductCheckIns).</div></div>`;
 }
 function mpTrend(sched){
   const days=[...new Set(mpData.days.map(r=>r.d))].filter(d=>d<=mpDate).sort().slice(-14).reverse(); if(!days.length) return '';
-  return `<div class="card"><h3 style="margin-top:0">14 ditët e fundit</h3><div class="tablewrap"><table><thead><tr><th>Data</th><th>Operatorë</th><th>Rreshta</th><th>Mapp</th><th>Njësi / orë</th></tr></thead><tbody>
+  return `<div class="card mon-hide"><h3 style="margin-top:0">14 ditët e fundit</h3><div class="tablewrap"><table><thead><tr><th>Data</th><th>Operatorë</th><th>Rreshta</th><th>Mapp</th><th>Njësi / orë</th></tr></thead><tbody>
     ${days.map(d=>{ const P=mpPeople(d, sched).people, s=k=>P.reduce((a,p)=>a+(+p[k]||0),0), hh=s('activeH');
       return `<tr><td data-sort="${d}"><a href="#" data-mpd="${d}">${h(fmtDateAl(d))}</a></td><td>${P.length}</td><td>${s('r')}</td><td>${s('units')}</td><td>${hh? mpR(s('units')/hh) : '—'}</td></tr>`; }).join('')}</tbody></table></div>
     <div class="hint">Kliko një datë për detajet. Mapp sipas ditës dhe orës së skanimit.</div></div>`;
