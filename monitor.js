@@ -7,10 +7,10 @@
    "Ekran i plotë" puts only the monitor on the screen; Esc leaves it. Leaving the tab stops the loop.
    =======================================================================*/
 const MON_MODULES=[
-  {id:'picking', title:'Picking',       render:()=>renderPicking($('#monStage')),   reset:()=>{ pkDate=monDay||null; }, body:'#pkBody'},
-  {id:'checkin', title:'Check-in',      render:()=>renderCheckin($('#monStage')),   reset:()=>{ ckDate=monDay||null; }, body:'#ckBody'},
-  {id:'checkout',title:'Check-out',     render:()=>renderCheckout($('#monStage')),  reset:()=>{ coDate=monDay||null; }, body:'#coBody'},
-  {id:'mapp',    title:'Mapp',          render:()=>renderMapp($('#monStage')),      reset:()=>{ mpDate=monDay||null; }, body:'#mpBody'},
+  {id:'picking', title:'Picking',       render:()=>renderPicking($('#monStage')),   reset:()=>{ pkDate=monDay||null; }, body:'#pkBody', at:()=>pkData&&pkData.at},
+  {id:'checkin', title:'Check-in',      render:()=>renderCheckin($('#monStage')),   reset:()=>{ ckDate=monDay||null; }, body:'#ckBody', at:()=>ckData&&ckData.at},
+  {id:'checkout',title:'Check-out',     render:()=>renderCheckout($('#monStage')),  reset:()=>{ coDate=monDay||null; }, body:'#coBody', at:()=>coData&&coData.at},
+  {id:'mapp',    title:'Mapp',          render:()=>renderMapp($('#monStage')),      reset:()=>{ mpDate=monDay||null; }, body:'#mpBody', at:()=>mpData&&mpData.at},
   {id:'podscan', title:'POD (skanime)', render:()=>renderPodScan($('#monStage')),   reset:()=>{ pdDate=monDay||null; }, body:'#pdBody'},
   // "Proceset sipas operatorit" (people.js) for the one day, without the Claim column (22.10.2026); read again on every pass
   {id:'proceset',title:'Proceset sipas operatorit', render:()=>renderPeopleProcess($('#monStage')), reset:()=>{ ppFrom=ppTo=(monDay||todayStr()); ppData=null; }, body:'#ppBody', noClaim:true}];
@@ -70,7 +70,23 @@ async function monShow(m, my){
   const st=$('#monStage'); m.reset(); window.PP_NO_CLAIM=!!m.noClaim; st.style.zoom=1; st.innerHTML='';
   await m.render();
   for(let t=0; t<120 && monAlive(my); t++){ const b=document.querySelector(m.body); if(b && !/^Po lexohe/.test(b.innerText.trim())) break; await monSleep(250); }
+  monStale(m);
   monSplit(); await monSleep(150); monFit();
+}
+/* WMS Pulse modules (Picking, Check-in, Check-out, Mapp): when today is shown and the Pulse read is older than 2 hours (or from
+   an earlier day — the hourly task did not run, e.g. the PC was off), the module would say "Asnjë … më <sot>" as if nothing
+   happened. A bar on top says the figures are not current and since when (23.10.2026). */
+function monStale(m){
+  if(!m.at || monDay) return;
+  const st=$('#monStage'); if(!st) return;
+  const old=st.querySelector('.mon-stale'); if(old) old.remove();
+  const now=new Date(); if(now.getHours()<7) return;
+  const at=m.at(), t=at? new Date(at) : null;
+  if(t && !isNaN(t) && now-t<=2*3600000) return;
+  const when= t&&!isNaN(t)? (fmtLocalDate(t)===fmtLocalDate(now)? '' : fmtDateAl(fmtLocalDate(t))+' ')+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0') : 'asnjëherë';
+  const bar=document.createElement('div'); bar.className='mon-stale';
+  bar.innerHTML='⚠ Të dhënat e WMS Pulse janë të vjetra (leximi i fundit: '+h(when)+'). Shifrat e sotme mund të mungojnë deri në rifreskimin e radhës (çdo orë 07–22).';
+  st.insertBefore(bar, st.firstChild);
 }
 /* the cards marked .mon-split (Picking "Sipas stacionit") are shown in two columns side by side: the rows are halved over two tables */
 function monSplit(){
