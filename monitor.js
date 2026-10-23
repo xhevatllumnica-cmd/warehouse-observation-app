@@ -30,8 +30,8 @@ function renderMonitor(v){
           <label class="small" style="display:flex;gap:5px;align-items:center">Sekonda <input type="number" id="monSec" min="5" max="600" value="${S.sec}" style="width:70px;min-height:34px"></label>
           <button class="btn sm" id="monPause">⏸ Pauzë</button><button class="btn sm" id="monNext">Tjetri ▸</button></div></div>
         <div class="mon-top"><div class="mon-stripe"></div>
-          <div class="mon-name"><span class="mon-title" id="monTitle">…</span> <span class="faint" id="monPos"></span><span class="mon-sub" id="monSub">—</span></div>
-          <div class="mon-act"><input type="date" id="monDate" class="btn" title="Zgjidh datën" max=""><button class="btn" id="monToday" title="Kthehu te sot">Sot</button><button class="btn" id="monRefresh" title="Rifresko modulin tani">⟳</button><button class="btn" id="monFull">⛶ Ekran i plotë</button><div class="mon-clock" id="monClock">--:--</div></div></div>
+          <div class="mon-name"><span class="mon-title" id="monTitle">…</span> <span class="faint" id="monPos"></span><span class="mon-sub" id="monSub">—</span><span class="mon-clock" id="monClock">--:--</span></div>
+          <div class="mon-act"><input type="date" id="monDate" class="btn" title="Zgjidh datën" max=""><button class="btn" id="monToday" title="Kthehu te sot">Sot</button><button class="btn" id="monRefresh" title="Rifresko modulin tani">⟳</button><button class="btn" id="monFull">⛶ Ekran i plotë</button></div></div>
         <div class="mon-bar"><div id="monFill"></div></div>
         <div class="mon-area" id="monArea"><div class="mon-stage" id="monStage"></div></div></div>`;
   const save=()=>{ monSet({sec:Math.max(5,+$('#monSec').value||20), known:MON_MODULES.map(m=>m.id), on:[...document.querySelectorAll('[data-mon]')].filter(c=>c.checked).map(c=>c.dataset.mon)}); };

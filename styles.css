@@ -240,4 +240,4 @@ td.wrap,th.wrap{white-space:normal;min-width:180px}
 .mon-sub { color:var(--muted); font-size:var(--mon-fs); margin:0; }
 .mon-act { display:flex; gap:8px; align-items:center; margin-left:auto; flex:none; }
 .mon-act .btn { font-size:var(--mon-fs); min-height:0; height:auto; padding:6px 12px; width:auto; }
-.mon-clock { font-size:var(--mon-fs); font-weight:700; font-variant-numeric:tabular-nums; margin-left:6px; }
+.mon-clock { font-size:var(--mon-fs); font-weight:700; font-variant-numeric:tabular-nums; }
