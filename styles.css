@@ -229,11 +229,15 @@ td.wrap,th.wrap{white-space:normal;min-width:180px}
 .mon-stage .mon-hide { display:none !important; }
 .mon-cols { display:flex; gap:18px; align-items:flex-start; }
 .mon-cols > table { flex:1 1 0; min-width:0; }
-.mon-top { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:2px 0 8px; }
-.mon-stripe { width:6px; align-self:stretch; background:var(--brand); border-radius:3px; }
-.mon-title { font-size:clamp(22px,2.2vw,38px); font-weight:750; line-height:1.1; }
-.mon-sub { color:var(--muted); font-size:clamp(13px,1.1vw,18px); margin-top:2px; }
-.mon-clock { margin-left:auto; font-size:clamp(28px,3vw,52px); font-weight:700; font-variant-numeric:tabular-nums; }
-.mon-act { display:flex; gap:8px; flex-wrap:wrap; }
 .mon-stage .filters { display:none !important; }
 .mon-stale { background:#fff3cd; color:#7a5200; border:1px solid #f0c36d; border-radius:8px; padding:8px 12px; margin:0 0 10px; font-size:clamp(13px,1.1vw,18px); font-weight:600; }
+
+/* Monitor header (23.10.2026): one row — process name + day + date, then date picker, Sot, refresh, full screen and the clock, all the same text size */
+.mon-top { --mon-fs:clamp(15px,1.4vw,22px); display:flex; align-items:center; gap:14px; flex-wrap:nowrap; margin:2px 0 8px; }
+.mon-stripe { width:6px; align-self:stretch; background:var(--brand); border-radius:3px; flex:none; }
+.mon-name { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; min-width:0; font-size:var(--mon-fs); line-height:1.2; }
+.mon-title { font-size:var(--mon-fs); font-weight:750; }
+.mon-sub { color:var(--muted); font-size:var(--mon-fs); margin:0; }
+.mon-act { display:flex; gap:8px; align-items:center; margin-left:auto; flex:none; }
+.mon-act .btn { font-size:var(--mon-fs); min-height:0; height:auto; padding:6px 12px; width:auto; }
+.mon-clock { font-size:var(--mon-fs); font-weight:700; font-variant-numeric:tabular-nums; margin-left:6px; }
